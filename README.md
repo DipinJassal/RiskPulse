@@ -1,8 +1,8 @@
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python) ![Streamlit](https://img.shields.io/badge/Streamlit-1.40+-red?logo=streamlit) ![LangChain](https://img.shields.io/badge/LangChain-0.3+-green?logo=chainlink) ![OpenAI](https://img.shields.io/badge/OpenAI-gpt--4o-412991?logo=openai) ![ChromaDB](https://img.shields.io/badge/ChromaDB-0.5+-orange)
+
 # RiskPulse
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue) ![Streamlit](https://img.shields.io/badge/Streamlit-1.40+-red) ![LangChain](https://img.shields.io/badge/LangChain-0.3+-green) ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-purple)
-
-**Real-Time Financial News Risk Intelligence System**
+**Real-time financial news risk intelligence — automated from raw headlines to a structured morning briefing in under 60 seconds.**
 
 RiskPulse is a multi-agent AI system that autonomously monitors financial news, SEC filings, and market data to generate actionable risk intelligence briefings — in under 90 seconds.
 
