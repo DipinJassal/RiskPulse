@@ -7,7 +7,8 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
-MODEL_NAME = "gpt-4o"
+MODEL_NAME = "gpt-4o"                        # Sentinel + Analyst
+ANTHROPIC_MODEL_NAME = "claude-opus-4-7"    # Briefer + Chat (large context)
 
 
 def validate() -> None:

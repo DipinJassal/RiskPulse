@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import logging
-from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
-from config import OPENAI_API_KEY, MODEL_NAME
+from config import ANTHROPIC_API_KEY, ANTHROPIC_MODEL_NAME
 from schemas import AnalysisSchema
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class RiskChat:
         self.briefing_text = briefing_text
         self.analyses = analyses or []
         self.history: list[tuple[str, str]] = []
-        self.llm = ChatOpenAI(model=MODEL_NAME, openai_api_key=OPENAI_API_KEY, max_tokens=1024)
+        self.llm = ChatAnthropic(model=ANTHROPIC_MODEL_NAME, anthropic_api_key=ANTHROPIC_API_KEY, max_tokens=1024)
 
     def _analysis_context(self) -> str:
         if not self.analyses:
