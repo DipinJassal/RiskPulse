@@ -30,7 +30,12 @@ def classify_relevance(article_text: str) -> dict:
                 raw = raw.split("```")[1]
                 if raw.startswith("json"):
                     raw = raw[4:]
-            return json.loads(repair_json(raw))
+            parsed = json.loads(repair_json(raw))
+            # LLM occasionally wraps the object in an array
+            if isinstance(parsed, list):
+                parsed = parsed[0] if parsed else {}
+            if isinstance(parsed, dict):
+                return parsed
         except Exception as e:
             wait = 2 ** (attempt + 1)
             print(f"[Classifier] attempt {attempt+1} failed: {e}. Retrying in {wait}s...")
