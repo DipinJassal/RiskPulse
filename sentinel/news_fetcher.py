@@ -1,6 +1,10 @@
 import time
+import requests
+from datetime import datetime, timezone, timedelta
 from newsapi import NewsApiClient
 from config import NEWS_API_KEY
+
+_EDGAR_URL = "https://efts.sec.gov/LATEST/search-index"
 
 
 class NewsCollector:
@@ -17,11 +21,7 @@ class NewsCollector:
             print(f"[NewsCollector] fetch_top_headlines error: {e}")
             return []
 
-    def fetch_by_keywords(
-        self,
-        keywords=None,
-        page_size=30,
-    ) -> list[dict]:
+    def fetch_by_keywords(self, keywords=None, page_size=30) -> list[dict]:
         if keywords is None:
             keywords = [
                 "federal reserve", "SEC", "earnings", "bankruptcy",
@@ -42,6 +42,43 @@ class NewsCollector:
                 print(f"[NewsCollector] fetch_by_keywords '{kw}' error: {e}")
         return articles
 
+    def fetch_sec_edgar(self, forms: str = "8-K,10-K", max_results: int = 20) -> list[dict]:
+        """
+        Fetches recent SEC EDGAR filings (8-K, 10-K) via the public full-text
+        search API. No API key required.
+        """
+        since = (datetime.now(timezone.utc) - timedelta(days=2)).strftime("%Y-%m-%d")
+        params = {
+            "q": "risk material adverse",
+            "dateRange": "custom",
+            "startdt": since,
+            "forms": forms,
+            "_source": "file_date,period_of_report,entity_name,file_num,form_type",
+            "hits.hits.total.value": max_results,
+        }
+        try:
+            resp = requests.get(_EDGAR_URL, params=params, timeout=10)
+            resp.raise_for_status()
+            hits = resp.json().get("hits", {}).get("hits", [])
+            articles = []
+            for hit in hits[:max_results]:
+                src = hit.get("_source", {})
+                entity = src.get("entity_name", "Unknown")
+                form = src.get("form_type", "Filing")
+                date = src.get("file_date", datetime.now(timezone.utc).isoformat())
+                articles.append({
+                    "title": f"SEC {form} Filing: {entity}",
+                    "description": f"{entity} filed a {form} with the SEC on {date}.",
+                    "source": "SEC EDGAR",
+                    "url": f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&filenum={src.get('file_num', '')}",
+                    "publishedAt": date,
+                })
+            print(f"[NewsCollector] SEC EDGAR: {len(articles)} filings fetched.")
+            return articles
+        except Exception as e:
+            print(f"[NewsCollector] SEC EDGAR error: {e}")
+            return []
+
     def _normalize(self, raw: list) -> list[dict]:
         return [self._normalize_one(a) for a in raw]
 
@@ -49,7 +86,7 @@ class NewsCollector:
         return {
             "title": a.get("title", ""),
             "description": a.get("description", ""),
-            "source": (a.get("source") or {}).get("name", ""),
+            "source": (a.get("source") or {}).get("name", "") if isinstance(a.get("source"), dict) else a.get("source", ""),
             "url": a.get("url", ""),
             "publishedAt": a.get("publishedAt", ""),
         }
