@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import sys
-from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -14,10 +13,11 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from frontend.components import (  # noqa: E402
     render_briefing,
-    render_event_sidebar,
+    render_overview,
     render_risk_level,
+    render_selected_event,
+    render_sidebar_minimal,
     render_severity_strip,
-    _severity,
 )
 from frontend.mock_data import get_mock_payload  # noqa: E402
 
@@ -32,21 +32,50 @@ st.set_page_config(
 st.markdown(
     """
 <style>
+:root, body {
+  color-scheme: dark;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 :root {
-  --bg:#070b13; --panel:#0e1623; --panel-2:#142033; --panel-3:#1a2638;
-  --teal:#06b6d4; --teal-soft:#0e3a4a; --red:#ef4444; --amber:#f59e0b;
-  --text:#e8edf5; --muted:#7c8aa1; --muted-2:#9aa8c0; --border:#1c2738;
+  --bg:#070b13;
+  --bg-2:#04060c;
+  --panel:#0e1623;
+  --panel-2:#142033;
+  --panel-3:#1a2638;
+
+  --teal:#06b6d4;
+  --teal-soft:#0e3a4a;
+  --red:#ef4444;
+  --amber:#f59e0b;
+  --green:#10b981;
+
+  --text:#e8edf5;
+  --muted:#7c8aa1;
+  --muted-2:#a7b5cc;
+  --border:#1c2738;
+
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --shadow-sm: 0 6px 18px rgba(0,0,0,0.28);
 }
 html, body, [class*="css"] {
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
-  font-feature-settings: "ss01", "cv11";
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01", "cv11", "liga" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
-.stApp { background: var(--bg); color: var(--text); }
+.stApp {
+  background:
+    radial-gradient(900px 500px at 20% 10%, rgba(6,182,212,0.08), transparent 50%),
+    radial-gradient(900px 600px at 80% 0%, rgba(239,68,68,0.10), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+  color: var(--text);
+}
 .block-container {
   padding-top: 1.2rem !important;
   padding-bottom: 2rem !important;
-  max-width: 1400px;
+  max-width: 1440px;
 }
 
 /* top gradient accent line */
@@ -70,11 +99,16 @@ body::before {
 .stAppHeader, [data-testid="stStatusWidget"] { display: none !important; }
 [data-testid="stDecoration"] { display: none !important; }
 
+/* improved focus */
+:focus-visible { outline: 2px solid rgba(6,182,212,0.75); outline-offset: 2px; border-radius: 8px; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
-  background: #050911;
+  background: linear-gradient(180deg, #050911, #04060c);
   border-right: 1px solid var(--border);
-  width: 360px !important;
+  width: 340px !important;
 }
 section[data-testid="stSidebar"] > div:first-child {
   padding: 16px 12px 12px;
@@ -131,12 +165,14 @@ section[data-testid="stSidebar"] details {
   background: var(--panel) !important;
   border: 1px solid var(--border) !important;
   border-left-width: 3px !important;
-  border-radius: 6px !important;
+  border-radius: var(--radius-sm) !important;
   margin-bottom: 6px !important;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.12s ease;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.03);
 }
 section[data-testid="stSidebar"] details:hover {
   background: var(--panel-2) !important;
+  transform: translateY(-1px);
 }
 section[data-testid="stSidebar"] details summary {
   padding: 8px 10px !important;
@@ -169,8 +205,18 @@ section[data-testid="stSidebar"] details[open] summary {
 .rp-chip {
   background: rgba(6,182,212,0.08); color: var(--teal);
   border: 1px solid var(--teal-soft);
-  padding: 1px 7px; border-radius: 4px;
+  padding: 2px 8px; border-radius: 999px;
   font-size: 10.5px; font-weight: 500;
+}
+
+/* make sidebar responsive */
+@media (max-width: 1100px) {
+  section[data-testid="stSidebar"] { width: 300px !important; }
+  .rp-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 850px) {
+  .block-container { padding-top: 0.75rem !important; }
+  section[data-testid="stSidebar"] { width: 280px !important; }
 }
 
 /* ── Header bar ────────────────────────────────────────────────────────────── */
@@ -494,7 +540,7 @@ section[data-testid="stSidebar"] details[open] summary {
 def _init_state() -> None:
     st.session_state.setdefault("messages", [])
     st.session_state.setdefault("pending_question", None)
-    st.session_state.setdefault("sev_filter", "ALL")
+    st.session_state.setdefault("selected_event_id", None)
     if "events" not in st.session_state:
         events, analyses, briefing, chat = get_mock_payload()
         st.session_state.events = events
@@ -524,6 +570,7 @@ def _refresh() -> None:
     st.session_state.briefing = briefing_text
     st.session_state.chat_instance = chat
     st.session_state.messages = []
+    st.session_state.selected_event_id = None
     st.session_state.last_updated = datetime.now().strftime("%H:%M:%S")
 
 
@@ -576,49 +623,25 @@ with col_btn:
 st.markdown('<hr class="rp-divider"/>', unsafe_allow_html=True)
 
 # ── Sidebar ─────────────────────────────────────────────────────────────────
-sev_filter = st.sidebar.radio(
-    "",
-    ["ALL", "CRITICAL", "WARNING", "INFO"],
-    horizontal=True,
-    index=["ALL", "CRITICAL", "WARNING", "INFO"].index(st.session_state.sev_filter),
-    label_visibility="collapsed",
-    key="sev_filter_radio",
-)
-st.session_state.sev_filter = sev_filter
-render_event_sidebar(st.session_state.events, st.session_state.analyses, sev_filter)
+selected_id = render_sidebar_minimal(st.session_state.events, st.session_state.analyses)
 
 # ── Main tabs ───────────────────────────────────────────────────────────────
-tab_briefing, tab_analytics, tab_chat = st.tabs(["Risk Briefing", "Analytics", "Chat"])
+tab_dash, tab_briefing, tab_chat = st.tabs(["Dashboard", "Briefing", "Chat"])
+
+with tab_dash:
+    render_overview(st.session_state.events, st.session_state.analyses)
+    st.markdown("### Selected event")
+    render_selected_event(
+        st.session_state.events,
+        st.session_state.analyses,
+        selected_event_id=selected_id,
+    )
 
 with tab_briefing:
     render_severity_strip(st.session_state.analyses)
-    render_briefing(st.session_state.briefing)
+    with st.expander("Open full briefing", expanded=False):
+        render_briefing(st.session_state.briefing)
 
-with tab_analytics:
-    analyses = st.session_state.analyses
-    events = st.session_state.events
-
-    if not analyses:
-        st.info("Click **Refresh** to load analysis data.")
-    else:
-        # ── Compute ────────────────────────────────────────────────────────
-        counts: dict[str, int] = {"CRITICAL": 0, "WARNING": 0, "INFO": 0}
-        for a in analyses:
-            _, lab = _severity(a.severity_score)
-            counts[lab] += 1
-        total = len(analyses) or 1
-
-        sector_counts: dict[str, int] = {}
-        for a in analyses:
-            for s in (a.affected_sectors or []):
-                sector_counts[s] = sector_counts.get(s, 0) + 1
-        top_sectors = sorted(sector_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-
-        source_counts = Counter(e.source for e in events)
-        cat_counts = Counter(e.category for e in events)
-
-        sev_colors = {"CRITICAL": "#ef4444", "WARNING": "#f59e0b", "INFO": "#10b981"}
-        max_sector = top_sectors[0][1] if top_sectors else 1
 
         # ── Severity distribution + Sector exposure (2-col grid) ──────────
         sev_bars = "".join(
