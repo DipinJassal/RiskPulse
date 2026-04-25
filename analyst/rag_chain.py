@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Sequence
+
+logger = logging.getLogger(__name__)
 
 try:
     from langchain_core.documents import Document
@@ -64,6 +68,7 @@ class RAGAnalyzer:
 
         splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         chunks = splitter.split_documents(raw_docs)
+        logger.info("Loaded %d KB chunks from %d knowledge-base files", len(chunks), len(txt_files))
         self._vectorstore = self._build_vectorstore(chunks=chunks, embedding_model=embedding_model)
 
     def _default_embeddings(self):
@@ -107,8 +112,12 @@ class RAGAnalyzer:
         vs.add_documents(list(chunks))
         return vs
 
-    def _retrieve(self, query: str, k: int = 3) -> List[RetrievedChunk]:
-        docs = self._vectorstore.similarity_search(query, k=k)
+    def _retrieve(self, query: str, k: int = 4) -> List[RetrievedChunk]:
+        """Retrieve top-k chunks; use MMR if available for diversity."""
+        try:
+            docs = self._vectorstore.max_marginal_relevance_search(query, k=k, fetch_k=k * 3)
+        except Exception:
+            docs = self._vectorstore.similarity_search(query, k=k)
         return [
             RetrievedChunk(content=d.page_content, source=str(d.metadata.get("source", "unknown")))
             for d in docs
@@ -128,7 +137,7 @@ class RAGAnalyzer:
 
     def analyze_event(self, event: EventSchema) -> AnalysisSchema:
         query = f"{event.headline}\n\n{event.raw_text}".strip()
-        retrieved = self._retrieve(query=query, k=3)
+        retrieved = self._retrieve(query=query, k=4)
 
         context = "\n\n---\n\n".join(
             f"[{i}] source={c.source}\n{c.content}"
@@ -166,11 +175,11 @@ class RAGAnalyzer:
                 data["event_id"] = event.event_id
                 return AnalysisSchema.model_validate(data)
             except Exception as e:
-                import time
                 wait = 2 ** (attempt + 1)
-                print(f"[RAGAnalyzer] attempt {attempt+1} failed: {e}. Retrying in {wait}s...")
+                logger.warning("Attempt %d failed: %s. Retrying in %ds...", attempt + 1, e, wait)
                 time.sleep(wait)
 
+        logger.error("All retries exhausted for event %s — returning fallback.", event.event_id)
         return AnalysisSchema(
             event_id=event.event_id,
             severity_score=5,

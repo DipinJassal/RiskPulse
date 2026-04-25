@@ -146,6 +146,9 @@ def run_pipeline() -> tuple[list[EventSchema], list[AnalysisSchema], str, object
     Each agent is activated in order; structured logs show the hand-offs so
     the demo clearly illustrates multi-agent coordination.
     """
+    import config
+    config.validate()
+
     logger.info("=" * 60)
     logger.info("  RiskPulse Pipeline  —  Multi-Agent Mode")
     logger.info("=" * 60)
