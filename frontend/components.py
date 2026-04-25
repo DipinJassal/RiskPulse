@@ -7,6 +7,17 @@ import streamlit as st
 
 from schemas import AnalysisSchema, EventSchema
 
+_CATEGORY_STYLE: dict[str, tuple[str, str]] = {
+    "fraud":       ("#ef4444", "#2d0f0f"),
+    "macro":       ("#f59e0b", "#2d1f06"),
+    "earnings":    ("#f97316", "#2d1506"),
+    "regulatory":  ("#3b82f6", "#0c1a35"),
+    "geopolitical":("#a855f7", "#1c0e30"),
+    "credit":      ("#ec4899", "#2d0a1c"),
+    "market":      ("#06b6d4", "#041e28"),
+    "bankruptcy":  ("#84cc16", "#121e04"),
+}
+
 
 def _severity(score: int) -> tuple[str, str]:
     """(hex_color, label) for a 1-10 severity score."""
@@ -19,8 +30,9 @@ def _severity(score: int) -> tuple[str, str]:
 
 def severity_badge(score: int) -> str:
     color, label = _severity(score)
+    glow = ' class="rp-badge rp-badge-crit"' if color == "#ef4444" else ' class="rp-badge"'
     return (
-        f'<span class="rp-badge" style="background:{color}1f;color:{color};'
+        f'<span{glow} style="background:{color}1f;color:{color};'
         f'border:1px solid {color}55">{label} {score}</span>'
     )
 
@@ -29,8 +41,12 @@ def _format_ts(ts: str) -> str:
     return ts[:16].replace("T", " ") if ts else ""
 
 
-def render_event_sidebar(events: list[EventSchema], analyses: list[AnalysisSchema]) -> None:
-    """Compact left-stripe event list. Headline + sev number on one line; details on expand."""
+def render_event_sidebar(
+    events: list[EventSchema],
+    analyses: list[AnalysisSchema],
+    severity_filter: str = "ALL",
+) -> None:
+    """Compact left-stripe event list with optional severity filter."""
     score_map = {a.event_id: a.severity_score for a in analyses}
     sector_map = {a.event_id: a.affected_sectors for a in analyses}
 
@@ -52,17 +68,27 @@ def render_event_sidebar(events: list[EventSchema], analyses: list[AnalysisSchem
         unsafe_allow_html=True,
     )
 
-    if not events:
-        st.sidebar.info("No events. Click **Refresh**.")
+    ordered = sorted(events, key=lambda e: score_map.get(e.event_id, 0), reverse=True)
+
+    # apply filter
+    if severity_filter != "ALL":
+        ordered = [
+            e for e in ordered
+            if _severity(score_map.get(e.event_id, 0))[1] == severity_filter
+        ]
+
+    if not ordered:
+        st.sidebar.info("No events match this filter.")
         return
 
-    ordered = sorted(events, key=lambda e: score_map.get(e.event_id, 0), reverse=True)
     for event in ordered:
         score = score_map.get(event.event_id, 0)
         color, _ = _severity(score)
         title = event.headline if len(event.headline) <= 70 else event.headline[:67] + "..."
 
-        # Custom-styled wrapper that gives the expander its left color stripe
+        cat = event.category.lower()
+        cat_color, cat_bg = _CATEGORY_STYLE.get(cat, ("#7c8aa1", "#1a2638"))
+
         st.sidebar.markdown(
             f'<div class="rp-evt-wrap" style="--sev:{color}">', unsafe_allow_html=True
         )
@@ -71,7 +97,8 @@ def render_event_sidebar(events: list[EventSchema], analyses: list[AnalysisSchem
                 f'<div class="rp-evt-meta">'
                 f'<span class="rp-pill" style="background:{color}1f;color:{color};border-color:{color}55">'
                 f"sev {score}</span>"
-                f'<span class="rp-pill">{event.category}</span>'
+                f'<span class="rp-pill-cat" style="background:{cat_bg};color:{cat_color};border:1px solid {cat_color}44">'
+                f"{event.category}</span>"
                 f'<span class="rp-pill">{event.source}</span>'
                 f"</div>"
                 f'<div class="rp-evt-time">{_format_ts(event.timestamp)} · '
@@ -108,22 +135,28 @@ def render_risk_level(analyses: list[AnalysisSchema]) -> None:
 
 
 def render_severity_strip(analyses: list[AnalysisSchema]) -> None:
-    """Quick KPI bar: counts by severity bucket."""
+    """KPI bar: counts by severity bucket with percentage of total."""
     counts = {"CRITICAL": 0, "WARNING": 0, "INFO": 0}
     for a in analyses:
         _, lab = _severity(a.severity_score)
         counts[lab] += 1
+    total = len(analyses)
+
+    def _pct(n: int) -> str:
+        return f"{n / total * 100:.0f}% of total" if total else "—"
+
     spec = [
         ("CRITICAL", counts["CRITICAL"], "#ef4444", "severity ≥ 7"),
-        ("WARNING", counts["WARNING"], "#f59e0b", "severity 4–6"),
-        ("INFO", counts["INFO"], "#10b981", "severity 1–3"),
-        ("TOTAL", len(analyses), "#06b6d4", "events tracked"),
+        ("WARNING",  counts["WARNING"],  "#f59e0b", "severity 4–6"),
+        ("INFO",     counts["INFO"],     "#10b981", "severity 1–3"),
+        ("TOTAL",    total,              "#06b6d4", "events tracked"),
     ]
     cards = "".join(
         f'<div class="rp-stat" style="--accent:{color}">'
         f'<div class="rp-stat-num">{n}</div>'
         f'<div class="rp-stat-lab">{lab}</div>'
         f'<div class="rp-stat-sub">{sub}</div>'
+        f'<div class="rp-stat-pct">{"—" if lab == "TOTAL" else _pct(n)}</div>'
         f"</div>"
         for lab, n, color, sub in spec
     )
@@ -141,16 +174,15 @@ def _colorize_tags(text: str) -> str:
         num = m.group(2)
         body = f"{label} {num}" if num else label
         c = color_for[label]
+        glow = " rp-badge-crit" if label == "CRITICAL" else ""
         return (
-            f'<span class="rp-badge" style="background:{c}1f;color:{c};'
+            f'<span class="rp-badge{glow}" style="background:{c}1f;color:{c};'
             f'border:1px solid {c}55">{body}</span>'
         )
 
     return _TAG_RE.sub(_sub, text)
 
 
-# Match a "### [CRITICAL N] Title" or "### [WARNING N] Title" block.
-# Captures the inline tag color so we can style the wrapping card.
 _ALERT_BLOCK_RE = re.compile(
     r"^###\s+\[(CRITICAL|WARNING|INFO)\s+(\d+)\]\s+(.+?)(?=^###\s|^##\s|\Z)",
     re.MULTILINE | re.DOTALL,
@@ -158,12 +190,6 @@ _ALERT_BLOCK_RE = re.compile(
 
 
 def _wrap_alert_cards(markdown: str) -> str:
-    """Convert each `### [SEV N] ... ` block into a styled card div containing markdown.
-
-    We wrap the heading + body in a div whose left border picks up the severity
-    color. Streamlit's markdown renderer processes content inside divs as long
-    as we leave blank lines around the markup.
-    """
     color_for = {"CRITICAL": "#ef4444", "WARNING": "#f59e0b", "INFO": "#10b981"}
 
     def _sub(m: re.Match) -> str:
@@ -186,8 +212,6 @@ _HEATMAP_RE = re.compile(
 
 
 def _render_heatmap(markdown: str) -> str:
-    """Replace the heatmap markdown table with a styled grid."""
-
     def _sub(m: re.Match) -> str:
         rows_block = m.group(2).strip()
         cells_html = []
