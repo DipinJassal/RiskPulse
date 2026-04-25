@@ -543,6 +543,24 @@ def _init_state() -> None:
     st.session_state.setdefault("pending_question", None)
     st.session_state.setdefault("selected_event_id", None)
     if "events" not in st.session_state:
+        # Try to load the last pipeline run from disk first
+        try:
+            from pipeline import load_result  # type: ignore
+            from briefer.chat import RiskChat  # type: ignore
+            cached = load_result()
+            if cached:
+                events, analyses, briefing, saved_at = cached
+                chat = RiskChat(briefing_text=briefing, analyses=analyses)
+                st.session_state.events = events
+                st.session_state.analyses = analyses
+                st.session_state.briefing = briefing
+                st.session_state.chat_instance = chat
+                st.session_state.last_updated = saved_at[11:16] + " UTC"
+                st.session_state.data_source = "live"
+                return
+        except Exception:
+            pass
+        # Fall back to mock data if no saved result exists
         events, analyses, briefing, chat = get_mock_payload()
         st.session_state.events = events
         st.session_state.analyses = analyses
