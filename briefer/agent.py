@@ -1,4 +1,4 @@
-from schemas import AnalysisSchema
+from briefer.models import AnalysisSchema
 from briefer.report_gen import generate_briefing
 from briefer.chat import RiskChat
 
@@ -17,7 +17,7 @@ def ask_followup(chat: RiskChat, question: str) -> str:
 
 if __name__ == "__main__":
     from datetime import datetime
-    from schemas import AnalysisSchema
+    from briefer.models import AnalysisSchema
 
     mock_analyses = [
         AnalysisSchema(
