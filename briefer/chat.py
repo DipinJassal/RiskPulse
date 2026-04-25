@@ -1,8 +1,8 @@
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
 from langchain_core.prompts import PromptTemplate
-from config import ANTHROPIC_API_KEY, MODEL_NAME
+from config import OPENAI_API_KEY, MODEL_NAME
 
 _SYSTEM_CONTEXT = (
     "You are a risk analyst assistant. You have access to today's risk briefing and "
@@ -18,7 +18,7 @@ class RiskChat:
 
     def _build_chain(self):
         self.memory = ConversationBufferWindowMemory(k=10, return_messages=False)
-        llm = ChatAnthropic(model=MODEL_NAME, anthropic_api_key=ANTHROPIC_API_KEY, max_tokens=1024)
+        llm = ChatOpenAI(model=MODEL_NAME, openai_api_key=OPENAI_API_KEY, max_tokens=1024)
         template = (
             f"{_SYSTEM_CONTEXT}\n\n"
             f"TODAY'S RISK BRIEFING:\n{self.briefing_text}\n\n"

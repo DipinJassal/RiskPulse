@@ -1,8 +1,8 @@
 import json
 import time
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
-from config import ANTHROPIC_API_KEY, MODEL_NAME
+from config import OPENAI_API_KEY, MODEL_NAME
 
 _SYSTEM_PROMPT = (
     "You are a financial risk analyst. Given a news article, assess: "
@@ -12,7 +12,7 @@ _SYSTEM_PROMPT = (
     "Respond in JSON only."
 )
 
-_llm = ChatAnthropic(model=MODEL_NAME, anthropic_api_key=ANTHROPIC_API_KEY, max_tokens=512)
+_llm = ChatOpenAI(model=MODEL_NAME, openai_api_key=OPENAI_API_KEY, max_tokens=512)
 
 
 def classify_relevance(article_text: str) -> dict:

@@ -1,7 +1,7 @@
 import json
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
-from config import ANTHROPIC_API_KEY, MODEL_NAME
+from config import OPENAI_API_KEY, MODEL_NAME
 from schemas import AnalysisSchema
 
 _SYSTEM_PROMPT = (
@@ -15,7 +15,7 @@ _SYSTEM_PROMPT = (
     "Use clear headers, bullet points, and severity color coding [CRITICAL] [WARNING] [INFO]."
 )
 
-_llm = ChatAnthropic(model=MODEL_NAME, anthropic_api_key=ANTHROPIC_API_KEY, max_tokens=2048)
+_llm = ChatOpenAI(model=MODEL_NAME, openai_api_key=OPENAI_API_KEY, max_tokens=2048)
 
 
 def generate_briefing(analyses: list[AnalysisSchema]) -> str:

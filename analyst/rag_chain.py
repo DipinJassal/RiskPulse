@@ -4,10 +4,10 @@ from pathlib import Path
 
 import chromadb
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from config import ANTHROPIC_API_KEY, MODEL_NAME
+from config import OPENAI_API_KEY, MODEL_NAME
 from schemas import AnalysisSchema, EventSchema
 
 _SYSTEM_PROMPT = (
@@ -23,7 +23,7 @@ KB_DIR = Path(__file__).parent / "knowledge_base"
 
 class RAGAnalyzer:
     def __init__(self):
-        self.llm = ChatAnthropic(model=MODEL_NAME, anthropic_api_key=ANTHROPIC_API_KEY, max_tokens=1024)
+        self.llm = ChatOpenAI(model=MODEL_NAME, openai_api_key=OPENAI_API_KEY, max_tokens=1024)
         self.chroma = chromadb.PersistentClient(path="./chroma_db")
         self.kb_collection = self.chroma.get_or_create_collection("risk_knowledge")
         self._load_knowledge_base()
