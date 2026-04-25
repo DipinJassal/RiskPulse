@@ -1,0 +1,132 @@
+RISK FRAMEWORKS FOR NEWS EVENT ANALYSIS (PD • LGD • EAD • VaR • STRESS)
+
+Credit/market concepts for translating headlines into assumptions and impacts.
+
+===============================================================================
+1) PD (PROBABILITY OF DEFAULT)
+===============================================================================
+Definition
+- PD is the likelihood that a borrower/counterparty defaults over a given horizon (e.g., 1-year PD, lifetime PD).
+
+How PD shows up in real-world decisions
+- Pricing: higher PD → higher credit spread.
+- Limits and exposure management: rising PD triggers tighter limits, higher margin, reduced tenor.
+
+How to map news to PD
+- Identify the “default mechanism”: cash-flow shock (demand collapse), refinancing risk (rates up, markets shut), liability run (deposits flee), legal/regulatory penalty, fraud/governance.
+- Translate to forward-looking drivers: revenue decline, margin compression, interest burden, asset impairments, funding access.
+- Use leading signals: CDS widening, rating outlook changes, covenant pressure, liquidity ratios, deposit outflows, rising delinquencies.
+
+Example applications
+- “Sector-wide layoffs + falling bookings”: PD rises for leveraged travel operators (cash-flow shock).
+- “Bank faces social-media fueled deposit run”: PD can jump sharply even before assets deteriorate (liquidity/confidence shock).
+
+===============================================================================
+2) LGD (LOSS GIVEN DEFAULT)
+===============================================================================
+Definition
+- LGD is the fraction of exposure lost if default occurs: \(LGD = 1 - Recovery\ Rate\).
+- Recovery depends on collateral value, seniority, legal regime, and how congested the bankruptcy process is.
+
+How LGD changes with the cycle
+- In benign times: collateral holds value, buyers exist, recoveries higher.
+
+How to map news to LGD
+- Asset value sensitivity: is collateral market liquid (Treasuries) or illiquid (office real estate)?
+- Priority structure: secured vs unsecured vs subordinated; for banks, depositor preference and resolution rules matter.
+- Correlated defaults: if many similar firms fail, recovery markets saturate, pushing LGD higher.
+
+Example applications
+- “Commercial real estate vacancy spikes”: LGD increases on CRE-backed loans (collateral impairment).
+- “Regulator changes bank capital instrument treatment”: effective LGD for a specific tranche (e.g., AT1) may be higher than previously assumed.
+
+===============================================================================
+3) EAD (EXPOSURE AT DEFAULT)
+===============================================================================
+Definition
+- EAD is the amount owed (or economic exposure) at the moment of default.
+- For term loans/bonds, EAD is close to outstanding principal; for revolving facilities, EAD can increase as borrowers draw down lines when stressed.
+
+How to map news to EAD
+- Drawdown behavior: stress headlines often cause corporates to draw revolvers (“liquidity hoarding”), raising EAD before default.
+- Netting and collateral: for derivatives, EAD depends on netting sets, collateral calls, and close-out rules.
+
+Example applications
+- “Issuer taps revolver amid market volatility”: EAD increases immediately even if PD hasn’t yet defaulted.
+- “Margin requirements increase”: derivative EAD may decrease (more collateral) while liquidity risk increases (collateral demand).
+
+===============================================================================
+4) EXPECTED LOSS VS UNEXPECTED LOSS
+===============================================================================
+Expected Loss (EL)
+- The average credit loss you expect over the horizon:
+  \(EL = PD \times LGD \times EAD\).
+- EL is “priced and provisioned”: lenders should earn spread to cover EL plus operating costs and capital.
+
+Unexpected Loss (UL)
+- The volatility around EL—the tail risk that losses are much worse than average.
+- UL drives economic capital and solvency planning.
+
+How news affects EL vs UL
+- A slow macro slowdown may raise EL gradually (PD drifts up).
+- A confidence/liquidity shock can raise UL disproportionately (fat tails, nonlinear runs, correlation spikes).
+
+News-analysis framing
+- Ask: “Is this an EL story or a UL story?” If it’s UL, stress testing and liquidity analysis often matter more than point estimates.
+
+===============================================================================
+5) VaR (VALUE AT RISK) — MARKET RISK
+===============================================================================
+Definition
+- VaR estimates the maximum loss not exceeded with a chosen confidence level over a set horizon (e.g., 99% 1-day VaR).
+- Example: 99% 1-day VaR of $10m means losses should exceed $10m only 1% of days, under model assumptions.
+
+How VaR applies to news
+- Headlines often cause volatility jumps and correlation shifts; VaR can spike mechanically.
+- VaR is backward-looking: it underestimates risk when the world changes faster than the lookback window.
+- Use VaR as a “risk thermometer,” not a full diagnosis; pair it with stress tests for structural breaks.
+
+Practical mapping from event → VaR impact
+- Rates shock (CPI surprise, central bank pivot): reprices duration risk; VaR rises for bond-heavy portfolios.
+- Credit shock (bank failure): spreads widen; equity and credit correlation increases; VaR rises across multi-asset books.
+- Commodity shock (supply disruption): energy VaR spikes; downstream sectors inherit margin risk.
+
+===============================================================================
+6) STRESS TESTING (SCENARIO / SENSITIVITY / REVERSE STRESS)
+===============================================================================
+What stress testing is
+- A forward-looking exercise applying extreme-but-plausible scenarios to exposures to estimate losses, liquidity needs, and capital impacts.
+
+Types
+- Sensitivity tests: “+200 bps rates,” “-20% equities,” “+300 bps credit spreads.”
+- Macro scenarios: recession paths (GDP, unemployment, inflation, house prices).
+
+How stress testing applies to news event analysis
+- News is often the catalyst that moves a scenario from hypothetical to plausible.
+- The key step is parameterizing the narrative into market and macro variables and then mapping to positions/exposures.
+
+Event-to-scenario template (useful for analysts)
+- Trigger: what happened?
+- Transmission: funding, demand, confidence, FX, policy.
+- Variables: rates, spreads, equity levels, vol, commodities, FX, credit availability.
+- Second-order effects: margin calls, downgrades, covenant breaches, drawdowns.
+- Mitigants: hedges, liquidity buffers, policy backstops.
+
+===============================================================================
+7) PUTTING IT TOGETHER: A “NEWS → RISK” PIPELINE
+===============================================================================
+Step 1: Classify the event
+- Credit event (default risk), market event (repricing), liquidity event (funding), operational/regulatory event, or mixed.
+
+Step 2: Identify affected entities and exposures
+- Direct exposures: specific issuer, counterparty, sector.
+- Indirect exposures: correlated positions, shared funding markets, shared customer base.
+
+Step 3: Update PD/LGD/EAD narratives
+- PD: cash flow, refinancing, confidence/run dynamics.
+- LGD: collateral and recovery environment, seniority/resolution.
+- EAD: drawdowns, margin/CSA mechanics, commitment usage.
+
+Step 4: Quantify quickly with ranges, then decide
+- Use bands (low/base/high) and list the signposts that would move you between bands (policy actions, data releases, liquidity indicators).
+- Pair the narrative with VaR (near-term volatility) and one or two stresses (regime break / tail) and translate outputs into actions: limits, hedges, liquidity, and what you will monitor next.

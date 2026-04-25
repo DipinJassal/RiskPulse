@@ -1,0 +1,7 @@
+.env
+.env.*
+analyst/.chroma/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
