@@ -1,36 +1,116 @@
-MAJOR FINANCIAL CRISES — REFERENCE DOCUMENT
+FINANCIAL CRISES — QUICK KNOWLEDGE BASE (CAUSES • TIMELINE • SECTORS • LESSONS)
 
-=== 2008 GLOBAL FINANCIAL CRISIS (GFC) ===
-Cause: Collapse of the US subprime mortgage market, fueled by excessive leverage, securitization of toxic mortgage-backed securities (MBS), and inadequate regulatory oversight. Credit default swaps amplified contagion.
-Timeline: 2007 subprime cracks → March 2008 Bear Stearns bailout → September 2008 Lehman Brothers bankruptcy → October 2008 TARP $700B rescue package → 2009 global recession trough.
-Sectors Affected: Financials (banks, insurers), Real Estate, Consumer Discretionary, Industrials. Financials lost 55% of value. Global GDP contracted 2%.
-Lessons Learned: Systemic leverage must be monitored. Interconnectedness of financial institutions creates contagion risk. Liquidity can evaporate overnight. Central bank intervention (quantitative easing) is a key stabilization tool.
-Risk Indicators: Rising delinquency rates on mortgages, widening credit spreads (TED spread, LIBOR-OIS), inverted yield curve, rising VIX above 40.
+===============================================================================
+1) 2008 GLOBAL FINANCIAL CRISIS (GFC)
+===============================================================================
+Causes (what built up)
+- Housing/credit boom: lax underwriting, “teaser” mortgages, and rising leverage.
+- Securitization chain opacity: mortgage risk was repackaged into MBS/CDOs; ratings and models understated correlated defaults.
+- Funding fragility: banks and broker-dealers relied on short-term wholesale funding (repo, commercial paper) against long-dated, hard-to-value assets.
 
-=== 2020 COVID-19 MARKET CRASH ===
-Cause: Global pandemic causing simultaneous supply and demand shocks. Lockdowns halted economic activity across all sectors. Oil demand collapsed as travel stopped.
-Timeline: January 2020 first reports → February 20 market peak → March 23 S&P 500 bottom (-34% in 33 days, fastest bear market in history) → April CARES Act $2.2T → 2020 Q3 V-shaped recovery in equities.
-Sectors Affected: Travel & Leisure, Energy, Retail, Hospitality devastated. Technology and Healthcare outperformed. Oil went negative (April 2020, WTI -$37/barrel).
-Lessons Learned: Black swan events can trigger synchronized global shocks. Central bank and fiscal response speed matters. Sector rotation can be extreme. Remote-work infrastructure stocks proved resilient.
-Risk Indicators: Spike in unemployment claims, airline booking cancellations, PMI collapse below 40, VIX above 80.
+Timeline (headline sequence)
+- 2006–2007: home prices flatten; subprime delinquencies accelerate; ABX indices weaken; early mortgage lenders fail.
+- Mar 2008: Bear Stearns rescue signals systemic funding stress.
+- Sep 2008: Lehman bankruptcy; AIG rescue; money market “breaks the buck”; interbank markets freeze.
+- Late 2008–2009: deep recession; policy response (TARP, guarantees, liquidity facilities, QE) stabilizes the system.
 
-=== 2023 SILICON VALLEY BANK (SVB) COLLAPSE ===
-Cause: SVB held a concentrated long-duration bond portfolio funded by short-term deposits. Rising interest rates caused mark-to-market losses. When disclosed, a bank run occurred within 48 hours driven by social media and VC community communication.
-Timeline: March 8, 2023: SVB announces $1.8B loss on bond sales → March 9: Stock drops 60%, Sequoia advises portfolio companies to withdraw → March 10: FDIC takes over → March 12: Signature Bank also closed → March 13: Fed announces BTFP emergency lending facility.
-Sectors Affected: Financials (regional banks), Technology startups (depositor concentration), Venture Capital.
-Lessons Learned: Duration mismatch risk is critical for bank balance sheets. Deposit concentration in one sector amplifies run risk. Social media accelerates bank runs beyond historical speed. Startup payroll dependency on single banking relationships is dangerous.
-Risk Indicators: Unrealized losses on held-to-maturity portfolios, deposit concentration ratios, uninsured deposit percentage above 90%.
+Sectors affected (first/second order)
+- First order: financials (investment banks, monoline insurers, mortgage lenders), real estate, structured credit.
+- Second order: cyclicals (industrials, consumer discretionary), commodities, global trade; high-yield spreads surge; unemployment rises.
 
-=== 2023 CREDIT SUISSE COLLAPSE ===
-Cause: Accumulated losses from Archegos Capital blowup ($5.5B loss), Greensill Capital exposure, multiple compliance failures, and management instability over several years. Loss of confidence among institutional clients.
-Timeline: 2021 Archegos/Greensill losses → 2022 series of scandals → March 2023 Saudi National Bank refuses to inject more capital → March 19, 2023: Emergency UBS acquisition for CHF 3B, wiping out AT1 bondholders ($17B in write-downs).
-Sectors Affected: European financials, AT1 bond market globally, Swiss banking reputation.
-Lessons Learned: Reputational damage accumulates and can become existential. AT1 (Additional Tier 1) bonds carry write-down risk above equity in Swiss law. European bank resolution differs from US FDIC model. Client trust, once broken, is rarely rebuilt.
-Risk Indicators: Rising CDS spreads on bank debt, client outflows, management turnover rate, regulatory fines accumulation.
+Lessons learned (reusable heuristics)
+- Liquidity kills fast: solvency debates become irrelevant when funding disappears; watch repo haircuts, CP rollovers, MMF flows.
+- Correlation is the hidden risk: diversification assumptions fail under regime shifts; stress test for “all correlations go to 1.”
+- Policy backstops matter: learn the “playbook” (guarantees, emergency lending, QE) and identify which markets are likely to be stabilized first.
 
-=== 1997 ASIAN FINANCIAL CRISIS ===
-Cause: Speculative attacks on Asian currencies pegged to the US dollar, fueled by large current account deficits, excessive foreign debt, and over-leveraged corporate sectors. IMF austerity conditions worsened contractions.
-Timeline: July 1997 Thai baht devaluation → August: Malaysian ringgit, Indonesian rupiah attack → October: Hong Kong dollar defense → November: South Korean won crisis → 1998: Russian default, LTCM collapse.
-Sectors Affected: Banking, Real Estate, Manufacturing across Thailand, Indonesia, South Korea, Malaysia. Indonesian GDP fell 13.5% in 1998.
-Lessons Learned: Fixed exchange rate pegs are vulnerable to speculative attack when reserves are insufficient. Current account deficits financed by short-term foreign capital are fragile. IMF conditionality can deepen recessions. Contagion spreads across emerging markets rapidly.
-Risk Indicators: Falling foreign exchange reserves, widening current account deficits, rising corporate foreign-currency debt, capital flight indicators.
+===============================================================================
+2) 2020 COVID-19 MARKET CRASH
+===============================================================================
+Causes (what built up / what triggered)
+- Exogenous shock: sudden stop in activity from pandemic and lockdowns.
+- Positioning/leverage: risk parity and volatility-targeting de-risking; hedge fund basis trades; corporate leverage in some sectors.
+- “Dash for cash”: investors sold even high-quality assets (Treasuries, IG credit) to raise cash amid uncertainty.
+
+Timeline (headline sequence)
+- Jan–Feb 2020: outbreak spreads; supply-chain disruptions begin; markets initially complacent.
+- Late Feb–Mar 2020: equities plunge; credit spreads gap wider; liquidity strains appear in U.S. Treasury market.
+- Mar–Apr 2020: massive monetary/fiscal response (rate cuts, QE, credit facilities, stimulus) restores market functioning.
+
+Sectors affected
+- First order losers: travel/leisure, airlines, hospitality, energy (demand collapse), small business services.
+- First order winners: technology enabling remote work, certain healthcare/biotech, e-commerce/logistics.
+- Second order: banks (credit risk), commercial real estate (office), municipalities (revenue shock).
+
+Lessons learned
+- Market plumbing matters: even “risk-free” assets can lose liquidity; monitor bid-ask spreads, dealer balance sheet constraints.
+- Policy can compress tails: central bank facilities can change default/illiquidity probabilities quickly; news analysis must incorporate “policy reaction function.”
+
+===============================================================================
+3) 2023 SILICON VALLEY BANK (SVB) COLLAPSE
+===============================================================================
+Causes
+- Duration/ALM mismatch: large holdings of long-duration Treasuries/agency MBS purchased in low-rate era; unrealized losses ballooned as rates rose.
+- Concentrated depositor base: tech startups/VC networks; deposits were large, often uninsured, and behaviorally correlated.
+- Rapid deposit outflows: higher rates increased opportunity cost of low-yield deposits; confidence shock triggered an unusually fast digital bank run.
+
+Timeline
+- 2022: rate hikes drive mark-to-market losses across banking; scrutiny rises.
+- Early Mar 2023: SVB announces losses/capital raise plan; confidence breaks; withdrawals accelerate.
+- Mar 10–12: SVB fails; regulators backstop deposits; Fed creates Bank Term Funding Program; contagion fears spread to regional banks.
+
+Sectors affected
+- Immediate: regional banks, bank preferreds/AT1, money market flows, fintech/VC ecosystem.
+- Spillovers: small/mid-cap equities, commercial real estate lenders, sectors reliant on bank credit (SMEs).
+
+Lessons learned
+- Deposit beta + concentration are critical: the “stickiness” of funding changes with rate regime and customer type.
+- Unrealized losses can become realized quickly: liquidity needs force sales; watch AOCI, held-to-maturity portfolios, and available collateral.
+
+===============================================================================
+4) 2023 CREDIT SUISSE CRISIS / UBS TAKEOVER
+===============================================================================
+Causes
+- Multi-year trust erosion: governance failures, risk management lapses, losses (e.g., Archegos), and repeated negative headlines.
+- Funding and franchise fragility: outflows of wealth management assets and deposits; rising funding costs.
+- Confidence threshold: in banking, reputation can be a binding constraint—once lost, stabilization is hard without a credible backstop.
+
+Timeline
+- 2021–2022: series of scandals and losses; restructuring attempts.
+- Mar 2023: broader banking stress after SVB; Credit Suisse faces acute confidence shock; authorities broker UBS acquisition; some AT1 bonds written down.
+
+Sectors affected
+- Global banks and bank capital instruments (AT1/CoCos), European financials, counterparties in derivatives and prime brokerage.
+- Secondary: risk sentiment broadly; FX and rates volatility; questions about creditor hierarchy in Europe.
+
+Lessons learned
+- “Idiosyncratic” can become systemic through confidence channels: reputational risk is a transmission mechanism.
+- Legal/regulatory terms drive pricing: instrument structure (AT1) and resolution regimes can reprice across the market after a single event.
+
+===============================================================================
+5) 1997 ASIAN FINANCIAL CRISIS
+===============================================================================
+Causes
+- Fixed/pegged FX regimes with limited reserves while capital flowed in; currencies became vulnerable to speculative attack.
+- Maturity and currency mismatch: borrowing short-term in foreign currency to fund longer-term domestic projects.
+- Weak banking supervision: rapid credit growth, real-estate bubbles, and connected lending increased fragility.
+
+Timeline
+- Jul 1997: Thai baht devaluation; contagion spreads to Indonesia, Malaysia, Philippines, South Korea.
+- Late 1997–1998: sharp currency depreciations; corporate/bank failures; IMF programs; deep recessions; spillovers to Russia (1998) and global risk appetite.
+
+Sectors affected
+- Immediate: banks, property developers, corporates with FX debt; exporters benefited later from weaker currencies.
+- Global spillovers: EM debt, commodities, multinational earnings, and global banks with regional exposures.
+
+Lessons learned
+- FX and funding mismatches are classic crisis accelerants: watch short-term external debt, reserve adequacy, and current-account dynamics.
+- Contagion follows balance-sheet linkages and investor behavior: even healthy economies can be hit via risk-off flows and forced deleveraging.
+- Policy credibility and communication matter: opaque reserves or delayed reforms can worsen speculative pressure.
+
+===============================================================================
+Practical “headline triage” checklist (cross-crisis)
+===============================================================================
+- What’s the dominant constraint: solvency, liquidity, or confidence?
+- Which balance sheet is stressed: households, corporates, banks, sovereigns?
+- Where is the leverage and what funds it (deposits, repo, FX debt, CP)?
+- What’s the likely policy response and the time-to-implement?
