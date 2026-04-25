@@ -12,6 +12,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from frontend.components import (  # noqa: E402
+    _severity,
     render_briefing,
     render_overview,
     render_risk_level,
@@ -642,13 +643,32 @@ with tab_briefing:
     with st.expander("Open full briefing", expanded=False):
         render_briefing(st.session_state.briefing)
 
+    # ── Analytics ─────────────────────────────────────────────────────────
+    analyses = st.session_state.analyses
+    events = st.session_state.events
+    if analyses:
+        sev_counts: dict[str, int] = {"CRITICAL": 0, "WARNING": 0, "INFO": 0}
+        for a in analyses:
+            _, lab = _severity(a.severity_score)
+            sev_counts[lab] += 1
+        total = len(analyses)
+        sev_colors = {"CRITICAL": "#ef4444", "WARNING": "#f59e0b", "INFO": "#10b981"}
 
-        # ── Severity distribution + Sector exposure (2-col grid) ──────────
+        sector_counts: dict[str, int] = {}
+        for a in analyses:
+            for s in (a.affected_sectors or []):
+                sector_counts[s] = sector_counts.get(s, 0) + 1
+        top_sectors = sorted(sector_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+        from collections import Counter
+        source_counts = Counter(e.source for e in events)
+        cat_counts = Counter(e.category for e in events)
+
         sev_bars = "".join(
             f'<div class="rp-ana-bar-row">'
             f'<span class="rp-ana-label">{lab}</span>'
-            f'<div class="rp-ana-track"><div class="rp-ana-fill" style="width:{counts[lab]/total*100:.0f}%;background:{sev_colors[lab]}"></div></div>'
-            f'<span class="rp-ana-count">{counts[lab]}</span>'
+            f'<div class="rp-ana-track"><div class="rp-ana-fill" style="width:{sev_counts[lab]/total*100:.0f}%;background:{sev_colors[lab]}"></div></div>'
+            f'<span class="rp-ana-count">{sev_counts[lab]}</span>'
             f"</div>"
             for lab in ["CRITICAL", "WARNING", "INFO"]
         )
@@ -659,32 +679,22 @@ with tab_briefing:
             f"</div>"
             for name, cnt in top_sectors
         )
-
         st.markdown(
             f'<div class="rp-ana-grid">'
-            f'<div class="rp-ana-card">'
-            f'<div class="rp-ana-title">Severity Distribution</div>'
-            f"{sev_bars}"
-            f"</div>"
-            f'<div class="rp-ana-card">'
-            f'<div class="rp-ana-title">Top Affected Sectors</div>'
-            f"{sector_rows}"
-            f"</div>"
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Severity Distribution</div>{sev_bars}</div>'
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Top Affected Sectors</div>{sector_rows}</div>'
             f"</div>",
             unsafe_allow_html=True,
         )
 
-        # ── Source & Category breakdown ────────────────────────────────────
         CAT_COLORS = {
             "fraud": "#ef4444", "macro": "#f59e0b", "earnings": "#f97316",
             "regulatory": "#3b82f6", "geopolitical": "#a855f7",
             "credit": "#ec4899", "market": "#06b6d4", "bankruptcy": "#84cc16",
         }
         src_cards = "".join(
-            f'<div class="rp-src-card">'
-            f'<div><div class="rp-src-num">{cnt}</div>'
-            f'<div class="rp-src-name">{src}</div></div>'
-            f"</div>"
+            f'<div class="rp-src-card"><div><div class="rp-src-num">{cnt}</div>'
+            f'<div class="rp-src-name">{src}</div></div></div>'
             for src, cnt in source_counts.most_common(8)
         )
         cat_bars = "".join(
@@ -695,22 +705,15 @@ with tab_briefing:
             f"</div>"
             for cat, cnt in cat_counts.most_common()
         )
-
         st.markdown(
             f'<div class="rp-ana-grid">'
-            f'<div class="rp-ana-card">'
-            f'<div class="rp-ana-title">Events by Category</div>'
-            f"{cat_bars}"
-            f"</div>"
-            f'<div class="rp-ana-card">'
-            f'<div class="rp-ana-title">Events by Source</div>'
-            f'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">{src_cards}</div>'
-            f"</div>"
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Events by Category</div>{cat_bars}</div>'
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Events by Source</div>'
+            f'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">{src_cards}</div></div>'
             f"</div>",
             unsafe_allow_html=True,
         )
 
-        # ── Avg severity per sector ────────────────────────────────────────
         sector_scores: dict[str, list[int]] = {}
         for a in analyses:
             for s in (a.affected_sectors or []):
@@ -735,9 +738,7 @@ with tab_briefing:
         )
         st.markdown(
             f'<div class="rp-ana-card-full">'
-            f'<div class="rp-ana-title">Average Severity by Sector (1–10 scale)</div>'
-            f"{avg_rows}"
-            f"</div>",
+            f'<div class="rp-ana-title">Average Severity by Sector (1–10 scale)</div>{avg_rows}</div>',
             unsafe_allow_html=True,
         )
 
