@@ -4,39 +4,40 @@
 
 **Real-time financial news risk intelligence — automated from raw headlines to a structured morning briefing in under 60 seconds.**
 
-RiskPulse is a multi-agent AI system that monitors financial news, reasons about risk exposure using a RAG knowledge base, and generates actionable briefings with an interactive follow-up chat interface.
+RiskPulse is a multi-agent AI system that autonomously monitors financial news, SEC filings, and market data to generate actionable risk intelligence briefings — in under 90 seconds.
+
+Built for the **SJSU Applied Data Science Hackathon 2026** by **Team FourSight**.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     pipeline.py (Orchestrator)              │
-│                  Sequential multi-agent runner              │
-└────────────┬───────────────────┬───────────────────┬────────┘
-             │                   │                   │
-             ▼                   ▼                   ▼
-    ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-    │ Sentinel Agent  │ │  Analyst Agent  │ │  Briefer Agent  │
-    │  Data Gatherer  │ │ Reasoning Engine│ │Report Generator │
-    │                 │ │                 │ │                 │
-    │ • NewsAPI fetch │ │ • RAG retrieval │ │ • Structured    │
-    │ • LLM classify  │ │ • Severity score│ │   briefing      │
-    │ • ChromaDB store│ │ • Sector mapping│ │ • Chat Q&A      │
-    └────────┬────────┘ └────────┬────────┘ └────────┬────────┘
-             │                   │                   │
-             ▼                   ▼                   ▼
-    ┌─────────────────────────────────────────────────────────┐
-    │                      ChromaDB                           │
-    │         risk_events collection  |  risk_knowledge       │
-    └─────────────────────────────────────────────────────────┘
-             │                                       │
-             ▼                                       ▼
-    ┌─────────────────────────────────────────────────────────┐
-    │                  Streamlit Frontend                     │
-    │    Live Event Feed  |  Risk Briefing  |  Chat Tab      │
-    └─────────────────────────────────────────────────────────┘
+NewsAPI + SEC EDGAR + yfinance
+          │
+          ▼
+┌─────────────────────┐
+│   Sentinel Agent    │  Fetches, classifies, and stores news events
+│  sentinel/agent.py  │  GPT-4o relevance classifier → ChromaDB
+└────────┬────────────┘
+         │  list[EventSchema]
+         ▼
+┌─────────────────────┐
+│   Analyst Agent     │  RAG-based risk assessment (parallel, cached)
+│  analyst/agent.py   │  Knowledge base → severity scoring (1-10)
+└────────┬────────────┘
+         │  list[AnalysisSchema]
+         ▼
+┌─────────────────────┐
+│   Briefer Agent     │  Generates structured morning briefing
+│  briefer/agent.py   │  + conversational follow-up chat
+└────────┬────────────┘
+         │
+         ▼
+┌─────────────────────┐
+│  Streamlit Dashboard│  Live event feed, risk briefing, chat tab
+│  frontend/app.py    │
+└─────────────────────┘
 ```
 
 ---
@@ -45,11 +46,11 @@ RiskPulse is a multi-agent AI system that monitors financial news, reasons about
 
 | Capability | How RiskPulse Delivers |
 |---|---|
-| **Autonomy** | Pipeline runs end-to-end from news fetch to briefing without human input |
-| **Tool Use** | NewsAPI, ChromaDB, OpenAI gpt-4o, yfinance, json-repair |
-| **Planning & Reasoning** | Analyst chains RAG retrieval → risk assessment → severity scoring (1-10) grounded in PD/LGD/EAD frameworks |
-| **Memory** | ChromaDB persists all events; RiskChat maintains a 10-turn conversation window across follow-up questions |
-| **Multi-Agent Coordination** | Three specialized agents orchestrated sequentially via pipeline.py; each activates, completes, and hands off to the next |
+| **Autonomy** | Pipeline runs end-to-end without human input |
+| **Tool Use** | NewsAPI, SEC EDGAR, yfinance, ChromaDB, GPT-4o |
+| **Planning & Reasoning** | Analyst chains RAG retrieval → risk frameworks → severity scoring |
+| **Memory** | ChromaDB persists events; 1h result cache; chat history (10-turn window) |
+| **Multi-Agent** | 3 specialized agents orchestrated sequentially via pipeline |
 
 ---
 
@@ -57,14 +58,15 @@ RiskPulse is a multi-agent AI system that monitors financial news, reasons about
 
 | Layer | Technology |
 |---|---|
-| LLM | OpenAI gpt-4o via `langchain-openai` |
-| Agent Framework | Plain-Python sequential pipeline (CrewAI-compatible) |
-| Vector DB | ChromaDB (persistent) — dual collections for events + knowledge base |
-| Embeddings | ChromaDB default (all-MiniLM-L6-v2) |
-| RAG | LangChain `RecursiveCharacterTextSplitter` + ChromaDB retrieval |
-| Frontend | Streamlit (wide layout, dark theme, chat interface) |
-| News API | NewsAPI.org |
-| Data Models | Pydantic v2 (`EventSchema`, `AnalysisSchema`) |
+| LLM | OpenAI GPT-4o (via `langchain-openai`) |
+| Orchestration | Plain-Python pipeline + CrewAI (dual-mode) |
+| Vector DB | ChromaDB (persistent, local) |
+| Embeddings | HuggingFace `all-MiniLM-L6-v2` (local, no API key) |
+| News | NewsAPI (headlines + keyword search) |
+| Filings | SEC EDGAR full-text search (public API, no key) |
+| Market Data | yfinance (real-time stock prices) |
+| Frontend | Streamlit |
+| Schemas | Pydantic v2 |
 
 ---
 
@@ -73,115 +75,108 @@ RiskPulse is a multi-agent AI system that monitors financial news, reasons about
 ```
 riskpulse/
 ├── sentinel/
-│   ├── agent.py          # Orchestrates fetch → classify → store
-│   ├── news_fetcher.py   # NewsAPI client with mock fallback
-│   ├── classifier.py     # LLM relevance classifier (0.0–1.0 score + category)
-│   └── store.py          # ChromaDB event storage + similarity search
+│   ├── agent.py          # Orchestrates fetch → classify → store → enrich
+│   ├── news_fetcher.py   # NewsAPI + SEC EDGAR client
+│   ├── classifier.py     # GPT-4o relevance + category classifier
+│   ├── stock_enricher.py # yfinance ticker lookup + price change %
+│   └── store.py          # ChromaDB persistent event store
+│
 ├── analyst/
-│   ├── agent.py          # Runs RAGAnalyzer over all events, sorts by severity
-│   ├── rag_chain.py      # RAG retrieval + gpt-4o risk assessment
+│   ├── agent.py          # Parallel analysis (5 workers) with cache
+│   ├── rag_chain.py      # RAGAnalyzer: retrieval + GPT-4o scoring
+│   ├── cache.py          # md5-keyed 1h result cache
+│   ├── run_standalone.py # Sanity-check runner (bank fraud > earnings miss)
 │   └── knowledge_base/
-│       ├── crises.txt         # GFC, SVB, COVID crash, Credit Suisse, Asian crisis
+│       ├── crises.txt         # GFC, COVID, SVB, Credit Suisse, Asian crisis
 │       ├── risk_frameworks.txt # PD, LGD, EAD, VaR, stress testing
-│       └── sector_mappings.txt # 12 sectors → risk factors + contagion paths
+│       └── sector_mappings.txt # 12 sectors: risk factors + contagion paths
+│
 ├── briefer/
-│   ├── agent.py          # Calls report_gen, initialises RiskChat
-│   ├── report_gen.py     # Structured 5-section morning briefing
-│   └── chat.py           # Conversational Q&A with sliding message window
+│   ├── agent.py          # run_briefer() + ask_followup()
+│   ├── report_gen.py     # GPT-4o briefing writer + fallback generator
+│   └── chat.py           # Conversational Q&A with 10-turn history
+│
 ├── frontend/
-│   ├── app.py            # Streamlit dashboard (sidebar, briefing tab, chat tab)
-│   └── components.py     # Risk level indicator, event sidebar rendering
-├── pipeline.py           # Sequential orchestrator + CrewAI Option A
+│   ├── app.py            # Streamlit dashboard (briefing + chat tabs)
+│   └── components.py     # Severity badges + sidebar event renderer
+│
+├── pipeline.py           # Dual-mode orchestrator (CrewAI / plain-Python)
 ├── schemas.py            # EventSchema + AnalysisSchema (Pydantic)
 ├── config.py             # Loads API keys from .env
-└── requirements.txt
+├── requirements.txt
+└── .env.example
 ```
 
 ---
 
 ## Setup
 
-**1. Clone and create environment**
+**1. Clone and install**
 ```bash
 git clone https://github.com/DipinJassal/RiskPulse.git
 cd RiskPulse
-python3 -m venv venv
-source venv/bin/activate
-```
-
-**2. Install dependencies**
-```bash
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-pip install langchain-text-splitters json-repair   # required extras
 ```
 
-**3. Configure API keys**
+**2. Configure API keys**
 ```bash
 cp .env.example .env
 ```
-
 Edit `.env`:
 ```
-OPENAI_API_KEY=sk-...          # Required — used for all LLM calls
-NEWS_API_KEY=...               # Optional — falls back to mock articles if missing
-ANTHROPIC_API_KEY=             # Optional — reserved for future Claude integration
+OPENAI_API_KEY=your_openai_key
+NEWS_API_KEY=your_newsapi_key      # newsapi.org — free tier: 100 req/day
+ANTHROPIC_API_KEY=                 # optional, not required
 ```
 
----
-
-## Usage
-
-**Run the full pipeline (terminal)**
+**3. Run**
 ```bash
-python pipeline.py
-```
-
-**Run individual agents**
-```bash
-python -m sentinel.agent    # Fetch + classify + store events
-python -m analyst.agent     # RAG risk assessment on mock events
-python -m briefer.agent     # Generate briefing + test chat
-```
-
-**Launch the Streamlit dashboard**
-```bash
+# Full dashboard
 streamlit run frontend/app.py
+
+# Test agents individually
+python -m sentinel.agent    # fetches live news + stock prices
+python -m analyst.agent     # RAG risk scoring (uses cache on repeat)
+python -m briefer.agent     # generates briefing + demo chat
+python pipeline.py          # full pipeline with logs
 ```
-Then click **Refresh** in the top-right — the pipeline runs live and populates the briefing and chat tabs.
 
 ---
 
-## Example Output
+## How It Works
 
-```
-12:23:07  AGENT 1/3 — Sentinel Agent | Data Gatherer
-          7 events collected (macro, fraud, earnings, geopolitical, bankruptcy...)
+### Sentinel Agent
+Pulls news from three sources simultaneously:
+- **NewsAPI** — top business headlines + 7 financial keyword searches
+- **SEC EDGAR** — recent 8-K and 10-K filings (material events)
+- **yfinance** — resolves mentioned company names to tickers, fetches live price change %
 
-12:23:18  AGENT 2/3 — Analyst Agent | Reasoning Engine
-          7 assessments generated | Top severity: 8/10 (Financials, Banking)
+Each article is sent to GPT-4o for classification: relevance score (0–1), category (regulatory/earnings/macro/credit/geopolitical/market/bankruptcy/fraud), and affected entities. Articles scoring below 0.4 are dropped. Events are stored in ChromaDB.
 
-12:23:42  AGENT 3/3 — Briefer Agent | Report Generator
-          Morning briefing ready
+### Analyst Agent
+Runs 5 parallel GPT-4o calls (ThreadPoolExecutor) with a 1-hour md5 result cache so repeated runs are near-instant. For each event:
+1. Retrieves top-3 relevant chunks from the knowledge base (HuggingFace embeddings)
+2. Sends event + context to GPT-4o with severity calibration anchored to real crises
+3. Returns `AnalysisSchema` with severity score, affected sectors, recommended actions, and historical context
 
-Pipeline COMPLETE — 47s total
-```
+### Briefer Agent
+Synthesizes all analyses into a structured morning briefing with 5 sections: Executive Summary, Critical Alerts (≥7), Watch List (4–6), Sector Heat Map, and Recommended Actions. Falls back to a template-generated briefing if the LLM call fails — the demo never crashes. A conversational `RiskChat` interface handles follow-up questions with 10-turn memory.
 
-**Briefing sections generated:**
-- Executive Summary
-- Critical Alerts (severity ≥ 7)
-- Watch List (severity 4–6)
-- Sector Exposure Heat Map (HIGH / MEDIUM / LOW)
-- Recommended Actions
+### Pipeline
+Two orchestration modes in `pipeline.py`:
+- **Option A (CrewAI)** — `run_pipeline_crewai()`: full CrewAI Agent/Task/Crew setup with role definitions and backstories visible during the demo
+- **Option B (plain-Python)** — `run_pipeline()`: sequential with agent banners, timing logs, and event summaries — used by the Streamlit dashboard
 
 ---
 
-## Team FourSight
+## Team
 
-Built at the **SJSU Applied Data Science Hackathon 2026**
+**Team FourSight** — SJSU Applied Data Science Hackathon 2026
 
 | Member | Role |
 |---|---|
-| Member 1 | Sentinel Agent — data pipeline, news fetching, LLM classification |
-| Member 2 | Analyst Agent — RAG chain, knowledge base, severity scoring |
-| Member 3 | Briefer Agent — report generation, conversational chat |
-| Nikhil Khaneja | Pipeline Orchestration, CI/CD, integration & deployment |
+| Member 1 | Sentinel Agent — data pipeline, yfinance, SEC EDGAR |
+| Member 2 | Analyst Agent — RAG chain, knowledge base |
+| Member 3 | Briefer Agent — report generation, chat |
+| Member 4 | Frontend + Pipeline integration |

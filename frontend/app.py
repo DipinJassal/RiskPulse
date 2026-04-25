@@ -1,92 +1,793 @@
-import streamlit as st
+"""RiskPulse — Streamlit dashboard."""
+from __future__ import annotations
+
+import sys
 from datetime import datetime
+from pathlib import Path
 
-st.set_page_config(page_title="RiskPulse — Risk Intelligence Dashboard", layout="wide")
+import streamlit as st
 
-st.markdown("""
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from frontend.components import (  # noqa: E402
+    _severity,
+    render_briefing,
+    render_overview,
+    render_risk_level,
+    render_selected_event,
+    render_sidebar_minimal,
+    render_severity_strip,
+)
+from frontend.mock_data import get_mock_payload  # noqa: E402
+
+st.set_page_config(
+    page_title="RiskPulse — Risk Intelligence Dashboard",
+    page_icon="◆",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# ── Custom CSS ──────────────────────────────────────────────────────────────
+st.markdown(
+    """
 <style>
-body { background-color: #0d1b2a; color: #e0e6f0; }
-.stApp { background-color: #0d1b2a; }
-h1, h2, h3 { color: #00b4d8; }
-.stMarkdown h2 { color: #00b4d8; border-bottom: 1px solid #00b4d8; padding-bottom: 4px; }
-.stTextInput > div > div > input { background-color: #1a2a3a; color: #e0e6f0; }
+:root, body {
+  color-scheme: dark;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg:#070b13;
+  --bg-2:#04060c;
+  --panel:#0e1623;
+  --panel-2:#142033;
+  --panel-3:#1a2638;
+
+  --teal:#06b6d4;
+  --teal-soft:#0e3a4a;
+  --red:#ef4444;
+  --amber:#f59e0b;
+  --green:#10b981;
+
+  --text:#e8edf5;
+  --muted:#7c8aa1;
+  --muted-2:#a7b5cc;
+  --border:#1c2738;
+
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --shadow-sm: 0 6px 18px rgba(0,0,0,0.28);
+}
+html, body, [class*="css"] {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01", "cv11", "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.stApp {
+  background:
+    radial-gradient(900px 500px at 20% 10%, rgba(6,182,212,0.08), transparent 50%),
+    radial-gradient(900px 600px at 80% 0%, rgba(239,68,68,0.10), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+  color: var(--text);
+}
+.block-container {
+  padding-top: 1.2rem !important;
+  padding-bottom: 2rem !important;
+  max-width: 1440px;
+}
+
+/* top gradient accent line */
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 40%, #06b6d4 100%);
+  z-index: 9999; pointer-events: none;
+}
+
+/* custom scrollbar */
+* { scrollbar-width: thin; scrollbar-color: #1e2d45 transparent; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #253450; }
+
+/* hide Streamlit chrome */
+#MainMenu, footer, header { visibility: hidden; }
+.stDeployButton, [data-testid="stToolbar"] { display: none !important; }
+.stAppHeader, [data-testid="stStatusWidget"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+
+/* improved focus */
+:focus-visible { outline: 2px solid rgba(6,182,212,0.75); outline-offset: 2px; border-radius: 8px; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+section[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #050911, #04060c);
+  border-right: 1px solid var(--border);
+  width: 340px !important;
+}
+section[data-testid="stSidebar"] > div:first-child {
+  padding: 16px 12px 12px;
+}
+.rp-side-h {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px;
+  color: var(--muted); text-transform: uppercase;
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 0 4px 6px;
+}
+.rp-side-count {
+  background: var(--panel-2); color: var(--teal);
+  padding: 2px 8px; border-radius: 10px; font-size: 10.5px;
+  letter-spacing: 0.5px;
+}
+.rp-side-stats {
+  display: flex; gap: 12px; margin: 0 4px 10px;
+  padding: 6px 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.rp-side-stat {
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* sidebar filter radio */
+[data-testid="stSidebar"] [data-baseweb="radio-group"] {
+  flex-direction: row !important; gap: 6px !important;
+  flex-wrap: wrap; margin: 0 4px 10px;
+}
+[data-testid="stSidebar"] [data-baseweb="radio"] {
+  margin: 0 !important;
+}
+[data-testid="stSidebar"] [data-baseweb="radio"] label {
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted) !important;
+  cursor: pointer; transition: all 0.15s;
+}
+[data-testid="stSidebar"] [data-baseweb="radio"]:has(input:checked) label {
+  background: rgba(6,182,212,0.12) !important;
+  border-color: var(--teal) !important;
+  color: var(--teal) !important;
+}
+
+/* the wrapper div holds the severity-colored left stripe */
+.rp-evt-wrap { position: relative; margin-bottom: 6px; }
+section[data-testid="stSidebar"] details {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-left-width: 3px !important;
+  border-radius: var(--radius-sm) !important;
+  margin-bottom: 6px !important;
+  transition: background 0.15s ease, transform 0.12s ease;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.03);
+}
+section[data-testid="stSidebar"] details:hover {
+  background: var(--panel-2) !important;
+  transform: translateY(-1px);
+}
+section[data-testid="stSidebar"] details summary {
+  padding: 8px 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: var(--text) !important;
+  letter-spacing: 0.1px;
+  font-variant-numeric: tabular-nums;
+}
+section[data-testid="stSidebar"] details[open] summary {
+  border-bottom: 1px solid var(--border);
+  background: rgba(6, 182, 212, 0.05);
+}
+.rp-evt-meta { display:flex; gap:5px; flex-wrap:wrap; margin: 4px 0 6px; }
+.rp-pill {
+  display:inline-block; padding: 1px 7px; border-radius: 10px;
+  background: var(--panel-2); color: var(--muted-2);
+  border: 1px solid var(--border);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.rp-pill-cat {
+  display:inline-block; padding: 1px 7px; border-radius: 10px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.rp-evt-time { color: var(--muted); font-size: 10.5px; margin-bottom: 6px; letter-spacing: 0.2px; }
+.rp-evt-body { font-size: 12.5px; line-height: 1.55; color: #cbd5e1; margin-bottom: 8px; }
+.rp-chips { display:flex; gap:4px; flex-wrap:wrap; margin-top: 6px; }
+.rp-chip {
+  background: rgba(6,182,212,0.08); color: var(--teal);
+  border: 1px solid var(--teal-soft);
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 500;
+}
+
+/* make sidebar responsive */
+@media (max-width: 1100px) {
+  section[data-testid="stSidebar"] { width: 300px !important; }
+  .rp-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 850px) {
+  .block-container { padding-top: 0.75rem !important; }
+  section[data-testid="stSidebar"] { width: 280px !important; }
+}
+
+/* ── Header bar ────────────────────────────────────────────────────────────── */
+.rp-brand { display:flex; align-items:baseline; gap:12px; }
+.rp-brand .rp-mark {
+  color: var(--red); font-size: 22px; line-height: 1;
+  text-shadow: 0 0 16px rgba(239, 68, 68, 0.7);
+}
+.rp-brand h1 {
+  margin: 0; font-size: 24px; font-weight: 800;
+  letter-spacing: -0.6px; color: var(--text);
+}
+.rp-brand .rp-tag {
+  color: var(--muted); font-size: 11.5px; letter-spacing: 0.4px;
+  border-left: 1px solid var(--border); padding-left: 12px;
+  text-transform: uppercase; font-weight: 600;
+}
+.rp-meta-line {
+  color: var(--muted); font-size: 11.5px; letter-spacing: 0.3px;
+  text-align: right; line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+.rp-meta-line b { color: #cbd5e1; font-weight: 600; }
+.rp-meta-dot { color: #334155; margin: 0 6px; }
+
+/* source status row */
+.rp-src-row { display:flex; gap:14px; margin-top:6px; justify-content:flex-end; }
+.rp-src { display:flex; align-items:center; gap:5px; font-size:10px; font-weight:600; letter-spacing:0.5px; color:var(--muted); text-transform:uppercase; }
+.rp-src-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.rp-src-dot.ok { background:#10b981; box-shadow:0 0 5px rgba(16,185,129,0.6); }
+.rp-src-dot.off { background:#334155; }
+
+/* Risk level pill */
+.rp-risk {
+  display:inline-flex; align-items:center; gap:10px;
+  padding: 7px 14px; border-radius: 8px;
+  font-weight: 700; letter-spacing: 0.3px;
+}
+.rp-risk-k { font-size: 9px; opacity: 0.7; letter-spacing: 1.6px; display:block; }
+.rp-risk-v { font-size: 14px; line-height: 1.1; }
+.rp-risk-s { opacity: 0.7; font-weight: 500; }
+.rp-pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  animation: rp-pulse 1.6s infinite;
+}
+@keyframes rp-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+  70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+.rp-divider {
+  height: 1px; border: none; margin: 14px 0 6px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── Severity badges (shared) ─────────────────────────────────────────────── */
+.rp-badge {
+  display:inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px;
+  vertical-align: middle; font-variant-numeric: tabular-nums;
+}
+.rp-badge-crit {
+  box-shadow: 0 0 10px rgba(239,68,68,0.3);
+}
+
+/* ── Stats KPI strip ──────────────────────────────────────────────────────── */
+.rp-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; margin: 6px 0 22px;
+}
+.rp-stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  padding: 12px 14px; border-radius: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  position: relative; overflow: hidden;
+  transition: background 0.15s;
+}
+.rp-stat::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  opacity: 0.4;
+}
+.rp-stat:hover { background: var(--panel-2); }
+.rp-stat-num {
+  font-size: 32px; font-weight: 800; line-height: 1;
+  color: var(--accent); letter-spacing: -1.5px;
+  font-variant-numeric: tabular-nums;
+}
+.rp-stat-lab {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.4px;
+  color: var(--text); text-transform: uppercase;
+  margin-top: 6px;
+}
+.rp-stat-sub { font-size: 10.5px; color: var(--muted); letter-spacing: 0.2px; }
+.rp-stat-pct {
+  font-size: 10.5px; font-weight: 700;
+  color: var(--accent); opacity: 0.75;
+  margin-top: 3px; font-variant-numeric: tabular-nums;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────────────────────── */
+.stTabs [data-baseweb="tab-list"] {
+  gap: 0; border-bottom: 1px solid var(--border);
+  background: transparent; margin-bottom: 8px;
+}
+.stTabs [data-baseweb="tab"] {
+  background: transparent; color: var(--muted);
+  padding: 10px 18px; font-size: 12.5px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  border-radius: 0; border-bottom: 2px solid transparent;
+  transition: color 0.15s;
+}
+.stTabs [data-baseweb="tab"]:hover { color: var(--text); }
+.stTabs [aria-selected="true"] {
+  color: var(--teal) !important;
+  border-bottom: 2px solid var(--teal) !important;
+}
+.stTabs [data-baseweb="tab-panel"] { padding-top: 12px; }
+
+/* ── Briefing content ─────────────────────────────────────────────────────── */
+.stTabs [data-baseweb="tab-panel"] h2 {
+  font-size: 12.5px; font-weight: 700; letter-spacing: 1.6px;
+  color: var(--teal); text-transform: uppercase;
+  margin: 22px 0 10px; padding: 0 0 6px;
+  border-bottom: 1px solid var(--border);
+}
+.stTabs [data-baseweb="tab-panel"] h2:first-child { margin-top: 4px; }
+.stTabs [data-baseweb="tab-panel"] h3 {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin: 0 0 6px; letter-spacing: -0.1px;
+}
+.stTabs [data-baseweb="tab-panel"] p,
+.stTabs [data-baseweb="tab-panel"] li {
+  font-size: 13px; line-height: 1.65; color: #cbd5e1;
+}
+.stTabs [data-baseweb="tab-panel"] ol,
+.stTabs [data-baseweb="tab-panel"] ul { padding-left: 20px; }
+.stTabs [data-baseweb="tab-panel"] li { margin: 4px 0; }
+.stTabs [data-baseweb="tab-panel"] hr {
+  border: none; border-top: 1px solid var(--border); margin: 14px 0;
+}
+.stTabs [data-baseweb="tab-panel"] strong { color: var(--text); }
+
+/* alert cards */
+.rp-alert {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 12px 16px 8px; margin: 0 0 10px;
+  transition: background 0.15s, transform 0.15s;
+}
+.rp-alert:hover { background: var(--panel-2); transform: translateX(2px); }
+.rp-alert h3 {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13.5px !important; margin: 0 0 6px !important;
+}
+.rp-alert ul { margin: 4px 0 0; padding-left: 18px; }
+.rp-alert li { margin: 2px 0; font-size: 12.5px !important; }
+.rp-alert p { margin: 4px 0 6px !important; font-size: 12.5px !important; }
+
+/* sector heatmap grid */
+.rp-heat {
+  display: flex; flex-direction: column; gap: 0;
+  margin: 10px 0 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden;
+}
+.rp-heat-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) 90px 2.5fr;
+  gap: 12px; padding: 9px 14px;
+  border-left: 3px solid var(--accent);
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  transition: background 0.15s;
+}
+.rp-heat-row:last-child { border-bottom: none; }
+.rp-heat-row:hover { background: var(--panel-2); }
+.rp-heat-sector { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.rp-heat-level {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px;
+  text-align: center; padding: 3px 10px; border-radius: 4px;
+  width: fit-content; font-variant-numeric: tabular-nums;
+}
+.rp-heat-driver { font-size: 11.5px; color: var(--muted-2); }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.stButton > button[kind="primary"] {
+  background: var(--red) !important;
+  border-color: var(--red) !important;
+  color: #fff !important;
+  font-weight: 700 !important; letter-spacing: 0.5px;
+  border-radius: 6px !important; height: 38px !important;
+  text-transform: uppercase; font-size: 12px !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(239,68,68,0.4);
+  transition: box-shadow 0.2s, background 0.15s !important;
+}
+.stButton > button[kind="primary"]:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 12px rgba(239,68,68,0.4) !important;
+}
+.stButton > button[kind="secondary"] {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--muted-2) !important;
+  font-size: 11.5px !important; font-weight: 500 !important;
+  border-radius: 16px !important;
+  padding: 4px 12px !important; height: auto !important;
+  letter-spacing: 0.2px; transition: all 0.15s !important;
+}
+.stButton > button[kind="secondary"]:hover {
+  background: var(--panel-2) !important;
+  color: var(--teal) !important;
+  border-color: var(--teal-soft) !important;
+}
+
+/* ── Chat ─────────────────────────────────────────────────────────────────── */
+[data-testid="stChatMessage"] {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 8px !important;
+  transition: background 0.15s;
+}
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+  background: var(--panel-2) !important;
+  border-left: 2px solid #334155 !important;
+}
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
+  background: rgba(6,182,212,0.05) !important;
+  border-left: 2px solid rgba(6,182,212,0.35) !important;
+}
+[data-testid="stChatMessage"] p { font-size: 13px !important; line-height: 1.6 !important; }
+[data-testid="stChatInput"] {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+.rp-chat-hint {
+  color: var(--muted); font-size: 10.5px;
+  letter-spacing: 1.4px; margin: 4px 0 8px;
+  text-transform: uppercase; font-weight: 700;
+}
+
+/* alerts / toasts */
+[data-testid="stAlert"] {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+/* ── Analytics tab ────────────────────────────────────────────────────────── */
+.rp-ana-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+@media (max-width: 900px) { .rp-ana-grid { grid-template-columns: 1fr; } }
+.rp-ana-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px;
+}
+.rp-ana-card-full {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; margin-bottom: 16px;
+}
+.rp-ana-title {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px;
+  color: var(--teal); text-transform: uppercase;
+  margin: 0 0 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.rp-ana-bar-row {
+  display: grid; grid-template-columns: 100px 1fr 36px;
+  align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.rp-ana-label { font-size: 11px; font-weight: 600; color: var(--muted-2); letter-spacing: 0.3px; }
+.rp-ana-track {
+  background: var(--panel-2); border-radius: 3px; height: 8px;
+  overflow: hidden; border: 1px solid var(--border);
+}
+.rp-ana-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.rp-ana-count { font-size: 12px; font-weight: 700; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+.rp-sector-row {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 12px;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.rp-sector-row:last-child { border-bottom: none; }
+.rp-sector-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.rp-sector-count {
+  font-size: 11px; font-weight: 700; color: var(--teal);
+  background: rgba(6,182,212,0.1); border: 1px solid var(--teal-soft);
+  padding: 1px 8px; border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.rp-src-card {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 14px; margin: 4px;
+}
+.rp-src-name { font-size: 11.5px; font-weight: 600; color: var(--muted-2); }
+.rp-src-num { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+
+/* spinner */
+[data-testid="stSpinner"] > div { border-top-color: var(--teal) !important; }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
-def _init_state():
-    defaults = {
-        "events": [],
-        "analyses": [],
-        "briefing": "",
-        "chat_instance": None,
-        "messages": [],
-        "last_updated": None,
-    }
-    for key, val in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = val
+# ── Session state ───────────────────────────────────────────────────────────
+def _init_state() -> None:
+    st.session_state.setdefault("messages", [])
+    st.session_state.setdefault("pending_question", None)
+    st.session_state.setdefault("selected_event_id", None)
+    if "events" not in st.session_state:
+        # Try to load the last pipeline run from disk first
+        try:
+            from pipeline import load_result  # type: ignore
+            from briefer.chat import RiskChat  # type: ignore
+            cached = load_result()
+            if cached:
+                events, analyses, briefing, saved_at = cached
+                chat = RiskChat(briefing_text=briefing, analyses=analyses)
+                st.session_state.events = events
+                st.session_state.analyses = analyses
+                st.session_state.briefing = briefing
+                st.session_state.chat_instance = chat
+                st.session_state.last_updated = saved_at[11:16] + " UTC"
+                st.session_state.data_source = "live"
+                return
+        except Exception:
+            pass
+        # Fall back to mock data if no saved result exists
+        events, analyses, briefing, chat = get_mock_payload()
+        st.session_state.events = events
+        st.session_state.analyses = analyses
+        st.session_state.briefing = briefing
+        st.session_state.chat_instance = chat
+        st.session_state.last_updated = datetime.now().strftime("%H:%M:%S")
+        st.session_state.data_source = "mock"
 
 
 _init_state()
 
-# ── Header ──────────────────────────────────────────────────────────────────
-col_title, col_meta, col_btn = st.columns([4, 3, 1])
-with col_title:
-    st.title("RiskPulse")
-    st.caption("Real-Time Financial News Risk Intelligence")
+
+def _refresh() -> None:
+    try:
+        from pipeline import run_pipeline  # type: ignore
+
+        events, analyses, briefing_text, chat = run_pipeline()
+        st.session_state.data_source = "live"
+    except Exception as e:
+        events, analyses, briefing_text, chat = get_mock_payload()
+        st.session_state.data_source = "mock"
+        st.toast(f"Pipeline unavailable — using mock data ({type(e).__name__})", icon="⚠️")
+
+    st.session_state.events = events
+    st.session_state.analyses = analyses
+    st.session_state.briefing = briefing_text
+    st.session_state.chat_instance = chat
+    st.session_state.messages = []
+    st.session_state.selected_event_id = None
+    st.session_state.last_updated = datetime.now().strftime("%H:%M:%S")
+
+
+def _ask(question: str) -> None:
+    st.session_state.messages.append({"role": "user", "content": question})
+    response = st.session_state.chat_instance.chat(question)
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+
+# ── Header bar ──────────────────────────────────────────────────────────────
+col_brand, col_risk, col_meta, col_btn = st.columns([3, 2, 2, 1], gap="medium")
+
+with col_brand:
+    st.markdown(
+        '<div class="rp-brand">'
+        '<span class="rp-mark">◆</span>'
+        "<h1>RiskPulse</h1>"
+        '<span class="rp-tag">Real-Time Financial Risk Intelligence</span>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+with col_risk:
+    render_risk_level(st.session_state.analyses)
+
 with col_meta:
-    if st.session_state.last_updated:
-        st.markdown(f"**Last updated:** {st.session_state.last_updated}")
-    if st.session_state.analyses:
-        from frontend.components import render_risk_level
-        render_risk_level(st.session_state.analyses)
+    is_live = st.session_state.data_source == "live"
+    src_label = "Live pipeline" if is_live else "Mock data"
+    st.markdown(
+        f'<div class="rp-meta-line">'
+        f"<b>Updated</b> {st.session_state.last_updated}"
+        f'<span class="rp-meta-dot">·</span>'
+        f"<b>{len(st.session_state.events)}</b> events"
+        f'<br><span style="font-size:10.5px;letter-spacing:1px">{src_label.upper()}</span>'
+        f"</div>"
+        f'<div class="rp-src-row">'
+        f'<span class="rp-src"><span class="rp-src-dot {"ok" if is_live else "off"}"></span>NewsAPI</span>'
+        f'<span class="rp-src"><span class="rp-src-dot {"ok" if is_live else "off"}"></span>SEC EDGAR</span>'
+        f'<span class="rp-src"><span class="rp-src-dot {"ok" if is_live else "off"}"></span>yfinance</span>'
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
 with col_btn:
-    refresh = st.button("Refresh", type="primary")
+    if st.button("↻ Refresh", type="primary", use_container_width=True):
+        with st.spinner("Agents analyzing..."):
+            _refresh()
+        st.rerun()
 
-if refresh:
-    with st.spinner("Agents analyzing risk landscape..."):
-        try:
-            from pipeline import run_pipeline
-            events, analyses, briefing_text, chat = run_pipeline()
-            st.session_state.events = events
-            st.session_state.analyses = analyses
-            st.session_state.briefing = briefing_text
-            st.session_state.chat_instance = chat
-            st.session_state.messages = []
-            st.session_state.last_updated = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-        except Exception as e:
-            st.error(f"Pipeline error: {e}")
+st.markdown('<hr class="rp-divider"/>', unsafe_allow_html=True)
 
-# ── Sidebar ──────────────────────────────────────────────────────────────────
-from frontend.components import render_event_sidebar
-render_event_sidebar(st.session_state.events, st.session_state.analyses)
+# ── Sidebar ─────────────────────────────────────────────────────────────────
+selected_id = render_sidebar_minimal(st.session_state.events, st.session_state.analyses)
 
-# ── Main Tabs ────────────────────────────────────────────────────────────────
-tab_briefing, tab_chat = st.tabs(["Risk Briefing", "Chat"])
+# ── Main tabs ───────────────────────────────────────────────────────────────
+tab_dash, tab_briefing, tab_chat = st.tabs(["Dashboard", "Briefing", "Chat"])
+
+with tab_dash:
+    render_overview(st.session_state.events, st.session_state.analyses)
+    st.markdown("### Selected event")
+    render_selected_event(
+        st.session_state.events,
+        st.session_state.analyses,
+        selected_event_id=selected_id,
+    )
 
 with tab_briefing:
-    if st.session_state.briefing:
-        st.markdown(st.session_state.briefing)
-    else:
-        st.info("Click **Refresh** to generate a risk briefing.")
+    render_severity_strip(st.session_state.analyses)
+    with st.expander("Open full briefing", expanded=False):
+        render_briefing(st.session_state.briefing)
+
+    # ── Analytics ─────────────────────────────────────────────────────────
+    analyses = st.session_state.analyses
+    events = st.session_state.events
+    if analyses:
+        sev_counts: dict[str, int] = {"CRITICAL": 0, "WARNING": 0, "INFO": 0}
+        for a in analyses:
+            _, lab = _severity(a.severity_score)
+            sev_counts[lab] += 1
+        total = len(analyses)
+        sev_colors = {"CRITICAL": "#ef4444", "WARNING": "#f59e0b", "INFO": "#10b981"}
+
+        sector_counts: dict[str, int] = {}
+        for a in analyses:
+            for s in (a.affected_sectors or []):
+                sector_counts[s] = sector_counts.get(s, 0) + 1
+        top_sectors = sorted(sector_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+        from collections import Counter
+        source_counts = Counter(e.source for e in events)
+        cat_counts = Counter(e.category for e in events)
+
+        sev_bars = "".join(
+            f'<div class="rp-ana-bar-row">'
+            f'<span class="rp-ana-label">{lab}</span>'
+            f'<div class="rp-ana-track"><div class="rp-ana-fill" style="width:{sev_counts[lab]/total*100:.0f}%;background:{sev_colors[lab]}"></div></div>'
+            f'<span class="rp-ana-count">{sev_counts[lab]}</span>'
+            f"</div>"
+            for lab in ["CRITICAL", "WARNING", "INFO"]
+        )
+        sector_rows = "".join(
+            f'<div class="rp-sector-row">'
+            f'<span class="rp-sector-name">{name}</span>'
+            f'<span class="rp-sector-count">{cnt}</span>'
+            f"</div>"
+            for name, cnt in top_sectors
+        )
+        st.markdown(
+            f'<div class="rp-ana-grid">'
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Severity Distribution</div>{sev_bars}</div>'
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Top Affected Sectors</div>{sector_rows}</div>'
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+
+        CAT_COLORS = {
+            "fraud": "#ef4444", "macro": "#f59e0b", "earnings": "#f97316",
+            "regulatory": "#3b82f6", "geopolitical": "#a855f7",
+            "credit": "#ec4899", "market": "#06b6d4", "bankruptcy": "#84cc16",
+        }
+        src_cards = "".join(
+            f'<div class="rp-src-card"><div><div class="rp-src-num">{cnt}</div>'
+            f'<div class="rp-src-name">{src}</div></div></div>'
+            for src, cnt in source_counts.most_common(8)
+        )
+        cat_bars = "".join(
+            f'<div class="rp-ana-bar-row">'
+            f'<span class="rp-ana-label">{cat.upper()}</span>'
+            f'<div class="rp-ana-track"><div class="rp-ana-fill" style="width:{cnt/len(events)*100:.0f}%;background:{CAT_COLORS.get(cat, "#7c8aa1")}"></div></div>'
+            f'<span class="rp-ana-count">{cnt}</span>'
+            f"</div>"
+            for cat, cnt in cat_counts.most_common()
+        )
+        st.markdown(
+            f'<div class="rp-ana-grid">'
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Events by Category</div>{cat_bars}</div>'
+            f'<div class="rp-ana-card"><div class="rp-ana-title">Events by Source</div>'
+            f'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">{src_cards}</div></div>'
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+
+        sector_scores: dict[str, list[int]] = {}
+        for a in analyses:
+            for s in (a.affected_sectors or []):
+                sector_scores.setdefault(s, []).append(a.severity_score)
+        sector_avgs = sorted(
+            ((s, sum(v) / len(v)) for s, v in sector_scores.items()),
+            key=lambda x: x[1], reverse=True,
+        )[:8]
+
+        def _sev_color(score: float) -> str:
+            if score >= 7: return "#ef4444"
+            if score >= 4: return "#f59e0b"
+            return "#10b981"
+
+        avg_rows = "".join(
+            f'<div class="rp-ana-bar-row">'
+            f'<span class="rp-ana-label" style="font-size:10.5px">{s[:18]}</span>'
+            f'<div class="rp-ana-track"><div class="rp-ana-fill" style="width:{avg/10*100:.0f}%;background:{_sev_color(avg)}"></div></div>'
+            f'<span class="rp-ana-count" style="color:{_sev_color(avg)}">{avg:.1f}</span>'
+            f"</div>"
+            for s, avg in sector_avgs
+        )
+        st.markdown(
+            f'<div class="rp-ana-card-full">'
+            f'<div class="rp-ana-title">Average Severity by Sector (1–10 scale)</div>{avg_rows}</div>',
+            unsafe_allow_html=True,
+        )
 
 with tab_chat:
     if not st.session_state.chat_instance:
-        st.info("Generate a briefing first by clicking **Refresh**.")
+        st.info("Click **Refresh** to generate a briefing first.")
     else:
+        if not st.session_state.messages:
+            st.markdown('<div class="rp-chat-hint">Try asking</div>', unsafe_allow_html=True)
+            sugg = [
+                "Which sector has the highest risk today?",
+                "How does today compare to 2008?",
+                "What actions should I take this week?",
+            ]
+            cols = st.columns(len(sugg))
+            for col, q in zip(cols, sugg):
+                if col.button(q, key=f"sugg-{q}", use_container_width=True):
+                    st.session_state.pending_question = q
+
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
+        if st.session_state.pending_question:
+            q = st.session_state.pending_question
+            st.session_state.pending_question = None
+            _ask(q)
+            st.rerun()
+
         user_input = st.chat_input("Ask about today's risk landscape...")
         if user_input:
-            st.session_state.messages.append({"role": "user", "content": user_input})
-            with st.chat_message("user"):
-                st.markdown(user_input)
-
-            with st.chat_message("assistant"):
-                with st.spinner("Analyzing..."):
-                    response = st.session_state.chat_instance.chat(user_input)
-                st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            with st.spinner("Analyzing..."):
+                _ask(user_input)
+            st.rerun()

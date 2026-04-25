@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
 
 
 class EventSchema(BaseModel):
@@ -10,6 +10,7 @@ class EventSchema(BaseModel):
     timestamp: str
     raw_text: str
     relevance_score: float
+    stock_info: Optional[Dict[str, Any]] = None  # yfinance enrichment
 
 
 class AnalysisSchema(BaseModel):

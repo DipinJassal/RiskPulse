@@ -1,8 +1,39 @@
+import json
 import logging
 import os
 import sys
 import time
 from datetime import datetime, timezone
+from pathlib import Path
+
+_RESULT_FILE = Path(__file__).parent / "pipeline_result.json"
+
+
+def save_result(events, analyses, briefing_text: str) -> None:
+    try:
+        _RESULT_FILE.write_text(json.dumps({
+            "saved_at": datetime.now(timezone.utc).isoformat(),
+            "events": [e.model_dump() for e in events],
+            "analyses": [a.model_dump() for a in analyses],
+            "briefing": briefing_text,
+        }))
+    except Exception as e:
+        logging.getLogger(__name__).warning("Could not save pipeline result: %s", e)
+
+
+def load_result():
+    """Return (events, analyses, briefing) from the last run, or None if absent."""
+    if not _RESULT_FILE.exists():
+        return None
+    try:
+        from schemas import AnalysisSchema, EventSchema
+        data = json.loads(_RESULT_FILE.read_text())
+        events = [EventSchema.model_validate(e) for e in data["events"]]
+        analyses = [AnalysisSchema.model_validate(a) for a in data["analyses"]]
+        return events, analyses, data["briefing"], data["saved_at"]
+    except Exception as e:
+        logging.getLogger(__name__).warning("Could not load pipeline result: %s", e)
+        return None
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -146,6 +177,9 @@ def run_pipeline() -> tuple[list[EventSchema], list[AnalysisSchema], str, object
     Each agent is activated in order; structured logs show the hand-offs so
     the demo clearly illustrates multi-agent coordination.
     """
+    import config
+    config.validate()
+
     logger.info("=" * 60)
     logger.info("  RiskPulse Pipeline  —  Multi-Agent Mode")
     logger.info("=" * 60)
@@ -211,6 +245,7 @@ def _run_data_pipeline() -> tuple[list[EventSchema], list[AnalysisSchema], str, 
         logger.info(f"  Top severity     : {top.severity_score}/10  ({', '.join(top.affected_sectors)})")
     logger.info("=" * 60)
 
+    save_result(events, analyses, briefing_text)
     return events, analyses, briefing_text, chat
 
 
