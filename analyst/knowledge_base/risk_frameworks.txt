@@ -1,0 +1,49 @@
+FINANCIAL RISK FRAMEWORKS — REFERENCE DOCUMENT
+
+=== PROBABILITY OF DEFAULT (PD) ===
+Definition: The likelihood that a borrower will fail to meet its debt obligations within a given time horizon (typically 1 year).
+Measurement: Derived from credit ratings (AAA = ~0.01% PD; CCC = ~25% PD), historical default rates, Merton structural models, or machine learning on financial ratios.
+Application to News Events: When a news event signals financial distress (earnings miss, credit downgrade, liquidity crisis), it directly raises the implied PD of affected entities. A bank fraud investigation may push PD from 1% to 15%+. Monitor credit spreads as a market-implied PD proxy.
+Key Drivers: Leverage ratios (Debt/EBITDA), interest coverage ratio, cash flow stability, industry cyclicality, macroeconomic conditions.
+
+=== LOSS GIVEN DEFAULT (LGD) ===
+Definition: The percentage of exposure that is lost if a default occurs, after accounting for recoveries (collateral liquidation, bankruptcy proceedings).
+Typical Values: Secured senior debt LGD: 20-40%. Unsecured senior debt LGD: 40-60%. Subordinated debt LGD: 70-90%. Equity: effectively 100%.
+Application to News Events: Events affecting collateral quality (real estate crash, commodity price collapse) raise LGD. A bank with concentrated mortgage exposure in a declining market faces higher LGD on its portfolio. Regulatory seizure typically results in higher LGD for junior creditors than orderly wind-down.
+Key Drivers: Collateral type and quality, seniority in capital structure, jurisdiction bankruptcy law, market liquidity for asset sales.
+
+=== EXPOSURE AT DEFAULT (EAD) ===
+Definition: The total value a lender is exposed to at the moment of default, including drawn balances and undrawn commitments that may be drawn before default.
+Application to News Events: Events signaling credit line drawdowns (liquidity crises, bank runs) increase EAD. If a company faces liquidity stress, it will draw revolving credit facilities, increasing bank EAD. Derivatives portfolios have EAD that fluctuates with market rates.
+Key Drivers: Current balances, undrawn credit facility commitments, derivative mark-to-market values, loan covenants that may trigger acceleration.
+
+=== EXPECTED LOSS (EL) ===
+Formula: EL = PD × LGD × EAD
+Interpretation: The average loss a lender should provision for. Used in loan loss reserves and credit pricing. Not the risk itself — it's the expected cost of doing business.
+Application to News Events: A news event that raises PD, LGD, or EAD simultaneously triggers a non-linear increase in EL. Example: An earnings miss (PD up) at a company with mostly unsecured debt (high LGD) and large credit facilities (high EAD) creates a compounded EL spike.
+
+=== UNEXPECTED LOSS (UL) ===
+Definition: The volatility (standard deviation) of losses around the expected loss. This is what capital is held against — banks must hold enough capital to absorb unexpected losses.
+Relationship to Risk Events: Tail events (crises, fraud, black swans) are manifestations of unexpected loss. News events that change the loss distribution (not just mean) — such as geopolitical shocks or regulatory actions — increase UL and capital requirements.
+Key Concept: Economic capital is sized to cover UL at a given confidence level (typically 99.9% for a 1-in-1000 year loss).
+
+=== VALUE AT RISK (VaR) ===
+Definition: The maximum loss expected over a given time horizon at a given confidence level. Example: "1-day 99% VaR = $10M" means there is a 1% chance of losing more than $10M in one day.
+Limitations: VaR underestimates tail risk (it says nothing about losses beyond the threshold). Failed to capture 2008 GFC losses. Subject to model risk.
+Application to News Events: News events that increase market volatility (VIX spike) directly increase VaR for equity portfolios. Correlated asset selloffs invalidate diversification assumptions embedded in VaR models.
+Variants: Historical VaR, Parametric VaR, Monte Carlo VaR. Stressed VaR uses crisis-period data.
+
+=== STRESS TESTING ===
+Definition: Applying severe but plausible scenarios to a portfolio to estimate potential losses under adverse conditions.
+Regulatory Context: Required by Basel III / Dodd-Frank for large banks. Fed DFAST/CCAR stress tests use scenarios including unemployment spikes, GDP contraction, equity market crash.
+Application to News Events: Breaking news can be used to construct stress scenarios in real-time. A central bank rate hike announcement triggers interest rate stress tests. A geopolitical event triggers supply chain and commodity price stress tests.
+Key Scenarios: Severe recession, sharp rate rise, credit market freeze, market liquidity crisis, geopolitical conflict, cyber attack on financial infrastructure.
+
+=== APPLYING FRAMEWORKS TO NEWS EVENTS ===
+When analyzing a financial news event, the structured approach is:
+1. Identify affected entities and their credit quality (PD baseline).
+2. Assess whether the event raises PD, LGD, or EAD — or all three.
+3. Estimate severity: minor events move PD by basis points; major events by 5-15 percentage points.
+4. Identify contagion: which other entities or sectors share exposure?
+5. Reference historical precedents: similar events, their outcomes, and timeframes.
+6. Rate severity 1-10: 1-3 = routine market noise; 4-6 = monitoring required; 7-9 = active risk management; 10 = systemic crisis.

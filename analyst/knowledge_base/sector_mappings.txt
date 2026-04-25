@@ -1,0 +1,61 @@
+SECTOR RISK MAPPINGS — REFERENCE DOCUMENT
+
+=== TECHNOLOGY ===
+Common Risk Factors: Revenue concentration in advertising or cloud spending, rapid product obsolescence, regulatory scrutiny (antitrust, data privacy), talent retention costs, interest rate sensitivity (long-duration growth assets).
+Leading Indicators: Ad spending indexes, cloud infrastructure CapEx by hyperscalers, consumer sentiment for devices, regulatory filings (FTC, EU DG COMP), venture capital funding slowdown.
+Contagion Paths: Tech layoffs → consumer spending reduction. Ad revenue drop → media/content sector impact. Semiconductor shortage → auto, industrial, consumer electronics chains. Cloud outages → cross-sector operational disruption.
+
+=== FINANCIALS (BANKS & INSURANCE) ===
+Common Risk Factors: Credit cycle deterioration, interest rate sensitivity (NIM compression/expansion), liquidity mismatches, regulatory capital requirements, counterparty risk in derivatives.
+Leading Indicators: Loan delinquency rates, credit card charge-off rates, bank CDS spreads, deposit outflow data, commercial real estate vacancy rates, yield curve shape.
+Contagion Paths: Bank failure → credit contraction across all sectors. Insurance losses → asset sales → market volatility. Investment bank losses → IPO/M&A market freeze. Regional bank stress → small business credit crunch.
+
+=== HEALTHCARE ===
+Common Risk Factors: Drug pricing regulation, FDA approval uncertainty, patent cliff risk, reimbursement rate changes (Medicare/Medicaid), clinical trial failure, product liability.
+Leading Indicators: FDA PDUFA dates, CMS reimbursement proposals, drug pricing legislation progress, hospital occupancy rates, biotech funding conditions.
+Contagion Paths: Drug pricing regulation → pharma revenue haircuts → R&D spending cuts → biotech funding drought. Hospital financial stress → medical device and supply chain pressure.
+
+=== ENERGY ===
+Common Risk Factors: Commodity price volatility (oil, natural gas, LNG), geopolitical supply disruption, energy transition regulatory risk, capital discipline shifts, refinery capacity constraints.
+Leading Indicators: WTI/Brent crude price, OPEC production decisions, US rig count (Baker Hughes), natural gas storage levels, carbon credit prices, renewable energy capacity additions.
+Contagion Paths: Oil price spike → transportation cost inflation → consumer spending reduction. Energy supply shock → manufacturing input cost surge. Utility financial stress → grid investment delays.
+
+=== CONSUMER DISCRETIONARY ===
+Common Risk Factors: Consumer confidence and disposable income, interest rate impact on big-ticket purchases, supply chain disruption, brand reputation events.
+Leading Indicators: Consumer sentiment (Michigan, Conference Board), retail sales data, credit card spending trends, housing starts (big-ticket durables), online shopping penetration.
+Contagion Paths: Consumer spending contraction → retail sector stress → commercial real estate vacancy. Auto sales decline → steel, aluminum, semiconductor demand drop. Travel slowdown → hotel, airline, hospitality cascade.
+
+=== CONSUMER STAPLES ===
+Common Risk Factors: Input cost inflation (agriculture, packaging, energy), private label competition, distribution disruption, currency risk for multinationals.
+Leading Indicators: Agricultural commodity prices (corn, wheat, soy), freight rates, private label market share data, consumer price sensitivity surveys.
+Contagion Paths: Agricultural commodity spike → staples margin compression → price increases → lower-income consumer stress. Packaging shortage → product availability gaps → brand switching.
+
+=== INDUSTRIALS ===
+Common Risk Factors: Global trade policy (tariffs, sanctions), infrastructure spending cycles, supply chain complexity, labor costs, energy input costs.
+Leading Indicators: ISM Manufacturing PMI, durable goods orders, freight volume indices (Cass Freight), US infrastructure bill spending, defense budget allocations.
+Contagion Paths: Tariff escalation → supply chain restructuring costs. Manufacturing slowdown → logistics, trucking, rail demand decline. Defense contract wins → precision components, aerospace suppliers.
+
+=== MATERIALS ===
+Common Risk Factors: Commodity price cycles, China industrial demand, environmental regulation, mining/extraction disruption (weather, labor, geopolitical).
+Leading Indicators: China PMI (primary driver), iron ore, copper, lithium prices, steel mill utilization rates, chemical spread data.
+Contagion Paths: Commodity price collapse → emerging market currency stress (commodity exporters). Copper shortage → EV manufacturing constraints. Rare earth supply disruption → technology hardware bottlenecks.
+
+=== REAL ESTATE ===
+Common Risk Factors: Interest rate levels (cap rate compression/expansion), credit availability, vacancy rates, remote work impact on office demand, demographic shifts.
+Leading Indicators: NAHB Housing Market Index, 30-year mortgage rates, commercial property price indices, office vacancy data (CBRE, JLL), REIT price-to-NAV.
+Contagion Paths: Commercial real estate stress → regional bank loan losses. Residential price decline → consumer wealth effect → spending reduction. REIT distress → institutional investor portfolio mark-downs.
+
+=== UTILITIES ===
+Common Risk Factors: Regulatory rate setting, renewable energy transition costs, extreme weather events, interest rate sensitivity (bond proxy), grid infrastructure aging.
+Leading Indicators: Electricity demand data, natural gas prices (input cost), renewable capacity factor, regulatory commission rulings, wildfire liability exposure.
+Contagion Paths: Utility credit downgrade → municipal bond market concern. Grid failure → cross-sector operational disruption. Energy price spike → residential affordability crisis.
+
+=== COMMUNICATION SERVICES ===
+Common Risk Factors: Streaming competition and subscriber churn, advertising market cyclicality, content cost inflation, regulatory content moderation requirements, spectrum auction costs.
+Leading Indicators: Streaming subscriber data, digital advertising spend, broadband penetration rates, 5G deployment capex, social media user engagement metrics.
+Contagion Paths: Ad market downturn → media company revenue decline. Streaming price wars → content studio spending rationalization. Social platform regulation → targeted advertising model disruption.
+
+=== FIXED INCOME / CREDIT MARKETS ===
+Common Risk Factors: Interest rate direction, credit spread widening, default rate cycle, liquidity in secondary markets, leveraged loan covenant quality.
+Leading Indicators: ICE BofA High Yield OAS spreads, leveraged loan prices, CLO formation pace, investment grade issuance calendar, distressed debt ratio.
+Contagion Paths: Credit spread widening → increased borrowing costs for all corporate issuers. High-yield market freeze → M&A and LBO activity halt. Sovereign spread widening → emerging market contagion.

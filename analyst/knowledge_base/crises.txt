@@ -1,0 +1,36 @@
+MAJOR FINANCIAL CRISES — REFERENCE DOCUMENT
+
+=== 2008 GLOBAL FINANCIAL CRISIS (GFC) ===
+Cause: Collapse of the US subprime mortgage market, fueled by excessive leverage, securitization of toxic mortgage-backed securities (MBS), and inadequate regulatory oversight. Credit default swaps amplified contagion.
+Timeline: 2007 subprime cracks → March 2008 Bear Stearns bailout → September 2008 Lehman Brothers bankruptcy → October 2008 TARP $700B rescue package → 2009 global recession trough.
+Sectors Affected: Financials (banks, insurers), Real Estate, Consumer Discretionary, Industrials. Financials lost 55% of value. Global GDP contracted 2%.
+Lessons Learned: Systemic leverage must be monitored. Interconnectedness of financial institutions creates contagion risk. Liquidity can evaporate overnight. Central bank intervention (quantitative easing) is a key stabilization tool.
+Risk Indicators: Rising delinquency rates on mortgages, widening credit spreads (TED spread, LIBOR-OIS), inverted yield curve, rising VIX above 40.
+
+=== 2020 COVID-19 MARKET CRASH ===
+Cause: Global pandemic causing simultaneous supply and demand shocks. Lockdowns halted economic activity across all sectors. Oil demand collapsed as travel stopped.
+Timeline: January 2020 first reports → February 20 market peak → March 23 S&P 500 bottom (-34% in 33 days, fastest bear market in history) → April CARES Act $2.2T → 2020 Q3 V-shaped recovery in equities.
+Sectors Affected: Travel & Leisure, Energy, Retail, Hospitality devastated. Technology and Healthcare outperformed. Oil went negative (April 2020, WTI -$37/barrel).
+Lessons Learned: Black swan events can trigger synchronized global shocks. Central bank and fiscal response speed matters. Sector rotation can be extreme. Remote-work infrastructure stocks proved resilient.
+Risk Indicators: Spike in unemployment claims, airline booking cancellations, PMI collapse below 40, VIX above 80.
+
+=== 2023 SILICON VALLEY BANK (SVB) COLLAPSE ===
+Cause: SVB held a concentrated long-duration bond portfolio funded by short-term deposits. Rising interest rates caused mark-to-market losses. When disclosed, a bank run occurred within 48 hours driven by social media and VC community communication.
+Timeline: March 8, 2023: SVB announces $1.8B loss on bond sales → March 9: Stock drops 60%, Sequoia advises portfolio companies to withdraw → March 10: FDIC takes over → March 12: Signature Bank also closed → March 13: Fed announces BTFP emergency lending facility.
+Sectors Affected: Financials (regional banks), Technology startups (depositor concentration), Venture Capital.
+Lessons Learned: Duration mismatch risk is critical for bank balance sheets. Deposit concentration in one sector amplifies run risk. Social media accelerates bank runs beyond historical speed. Startup payroll dependency on single banking relationships is dangerous.
+Risk Indicators: Unrealized losses on held-to-maturity portfolios, deposit concentration ratios, uninsured deposit percentage above 90%.
+
+=== 2023 CREDIT SUISSE COLLAPSE ===
+Cause: Accumulated losses from Archegos Capital blowup ($5.5B loss), Greensill Capital exposure, multiple compliance failures, and management instability over several years. Loss of confidence among institutional clients.
+Timeline: 2021 Archegos/Greensill losses → 2022 series of scandals → March 2023 Saudi National Bank refuses to inject more capital → March 19, 2023: Emergency UBS acquisition for CHF 3B, wiping out AT1 bondholders ($17B in write-downs).
+Sectors Affected: European financials, AT1 bond market globally, Swiss banking reputation.
+Lessons Learned: Reputational damage accumulates and can become existential. AT1 (Additional Tier 1) bonds carry write-down risk above equity in Swiss law. European bank resolution differs from US FDIC model. Client trust, once broken, is rarely rebuilt.
+Risk Indicators: Rising CDS spreads on bank debt, client outflows, management turnover rate, regulatory fines accumulation.
+
+=== 1997 ASIAN FINANCIAL CRISIS ===
+Cause: Speculative attacks on Asian currencies pegged to the US dollar, fueled by large current account deficits, excessive foreign debt, and over-leveraged corporate sectors. IMF austerity conditions worsened contractions.
+Timeline: July 1997 Thai baht devaluation → August: Malaysian ringgit, Indonesian rupiah attack → October: Hong Kong dollar defense → November: South Korean won crisis → 1998: Russian default, LTCM collapse.
+Sectors Affected: Banking, Real Estate, Manufacturing across Thailand, Indonesia, South Korea, Malaysia. Indonesian GDP fell 13.5% in 1998.
+Lessons Learned: Fixed exchange rate pegs are vulnerable to speculative attack when reserves are insufficient. Current account deficits financed by short-term foreign capital are fragile. IMF conditionality can deepen recessions. Contagion spreads across emerging markets rapidly.
+Risk Indicators: Falling foreign exchange reserves, widening current account deficits, rising corporate foreign-currency debt, capital flight indicators.
