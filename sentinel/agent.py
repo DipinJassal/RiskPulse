@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from schemas import EventSchema
 from sentinel.news_fetcher import NewsCollector
@@ -10,7 +10,7 @@ RELEVANCE_THRESHOLD = 0.4
 
 
 def run_sentinel() -> list[EventSchema]:
-    print(f"[Sentinel] Starting at {datetime.utcnow().isoformat()}")
+    print(f"[Sentinel] Starting at {datetime.now(timezone.utc).isoformat()}")
     collector = NewsCollector()
     store = EventStore()
 
@@ -35,11 +35,11 @@ def run_sentinel() -> list[EventSchema]:
 
         event = EventSchema(
             event_id=str(uuid.uuid4()),
-            headline=article.get("title", ""),
-            source=article.get("source", ""),
+            headline=article.get("title", "") or "",
+            source=article.get("source", "") or "",
             category=classification.get("category", "unknown"),
-            timestamp=article.get("publishedAt", datetime.utcnow().isoformat()),
-            raw_text=article.get("description", ""),
+            timestamp=article.get("publishedAt", datetime.now(timezone.utc).isoformat()) or datetime.now(timezone.utc).isoformat(),
+            raw_text=article.get("description", "") or "",
             relevance_score=score,
         )
         store.add_event(event)

@@ -1,5 +1,6 @@
 import json
 import time
+from json_repair import repair_json
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from config import OPENAI_API_KEY, MODEL_NAME
@@ -29,7 +30,7 @@ def classify_relevance(article_text: str) -> dict:
                 raw = raw.split("```")[1]
                 if raw.startswith("json"):
                     raw = raw[4:]
-            return json.loads(raw)
+            return json.loads(repair_json(raw))
         except Exception as e:
             wait = 2 ** (attempt + 1)
             print(f"[Classifier] attempt {attempt+1} failed: {e}. Retrying in {wait}s...")
