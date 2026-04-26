@@ -8,11 +8,12 @@ from sentinel.news_fetcher import NewsCollector
 from sentinel.classifier import classify_relevance
 from sentinel.stock_enricher import get_stock_info
 from sentinel.store import EventStore
+from config import DEMO_MODE, DEMO_MAX_ARTICLES
 
 logger = logging.getLogger(__name__)
 
 RELEVANCE_THRESHOLD = 0.4
-_HEADLINE_SIM_THRESHOLD = 0.78  # deduplicate near-duplicate headlines
+_HEADLINE_SIM_THRESHOLD = 0.78
 
 
 def _headlines_similar(a: str, b: str) -> bool:
@@ -28,6 +29,10 @@ def run_sentinel() -> list[EventSchema]:
     raw_articles += collector.fetch_by_keywords()
     raw_articles += collector.fetch_sec_edgar()
     logger.info("Fetched %d raw articles across all sources", len(raw_articles))
+
+    if DEMO_MODE:
+        raw_articles = raw_articles[:DEMO_MAX_ARTICLES]
+        logger.info("DEMO MODE: capped to %d articles", len(raw_articles))
 
     seen_urls: set[str] = set()
     seen_headlines: list[str] = []
@@ -55,6 +60,10 @@ def run_sentinel() -> list[EventSchema]:
         if score < RELEVANCE_THRESHOLD:
             continue
 
+        category = classification.get("category", "unknown")
+        if isinstance(category, list):
+            category = category[0] if category else "unknown"
+
         entities = classification.get("affected_entities", [])
         stock_info = get_stock_info(entities) if entities else {}
 
@@ -62,7 +71,7 @@ def run_sentinel() -> list[EventSchema]:
             event_id=str(uuid.uuid4()),
             headline=headline,
             source=article.get("source", "") or "",
-            category=classification.get("category", "unknown"),
+            category=category,
             timestamp=article.get("publishedAt", datetime.now(timezone.utc).isoformat()) or datetime.now(timezone.utc).isoformat(),
             raw_text=article.get("description", "") or "",
             relevance_score=score,
