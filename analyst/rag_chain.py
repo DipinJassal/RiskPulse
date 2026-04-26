@@ -78,11 +78,7 @@ class RAGAnalyzer:
         except Exception:
             pass
 
-        if os.getenv("OPENAI_API_KEY"):
-            from langchain_openai import OpenAIEmbeddings
-            return OpenAIEmbeddings()
-
-        raise ImportError("No embedding backend available.")
+        raise ImportError("No embedding backend available (install sentence-transformers).")
 
     def _build_vectorstore(self, chunks: Sequence[Document], embedding_model: Optional[object] = None):
         from langchain_chroma import Chroma
@@ -124,11 +120,10 @@ class RAGAnalyzer:
         ]
 
     def _call_llm(self, prompt: str) -> str:
-        from langchain_openai import ChatOpenAI
+        from langchain_anthropic import ChatAnthropic
         from langchain_core.messages import HumanMessage, SystemMessage
-        from config import OPENAI_API_KEY, MODEL_NAME
-
-        llm = ChatOpenAI(model=MODEL_NAME, openai_api_key=OPENAI_API_KEY, max_tokens=600)
+        from config import ANTHROPIC_API_KEY, MODEL_NAME as _MODEL
+        llm = ChatAnthropic(model=_MODEL, anthropic_api_key=ANTHROPIC_API_KEY, max_tokens=600)
         response = llm.invoke([
             SystemMessage(content="You are a senior risk analyst. Respond with valid JSON only."),
             HumanMessage(content=prompt),
